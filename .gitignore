@@ -6,4 +6,6 @@ playwright-report/
 *.log
 PLAN.md
 ROADMAP.md
+RULES.md
+JOURNAL.md
 dist/
