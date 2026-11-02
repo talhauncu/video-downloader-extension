@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="tr">
+<head><meta charset="utf-8"><title>Dönen dizinli oynatıcı</title></head>
+<body style="margin:0;background:#000">
+  <video id="v" controls width="640" height="360"></video>
+  <script>
+    // A player whose CDN rotates directories: the master lists "/mw/<token>…" but the player
+    // asks for "/mt/…" and "/mi/…"; subtitles are 1.vtt, 2.vtt, 3.vtt.
+    const ms = new MediaSource();
+    const video = document.getElementById('v');
+    video.src = URL.createObjectURL(ms);
+    ms.addEventListener('sourceopen', () => { ms.duration = 4; });
+    const t = new URLSearchParams(location.search).get('t');
+    (async () => {
+      await fetch(`/media/rot/mt/${t}avr1`).then((r) => r.text());
+      await Promise.all([`/media/rot/mt/${t}vr1b180`, `/media/rot/mi/${t}vr1b180l0tra1`].map((u) => fetch(u).then((r) => r.text())));
+      await Promise.all([1, 2, 3].map((n) => fetch(`/media/rot-subs/${n}.vtt`).then((r) => r.text())));
+      document.body.dataset.loaded = 'true';
+    })();
+  </script>
+</body>
+</html>

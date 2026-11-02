@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title data-i18n="optTitle">Video Downloader – Settings</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <h1 data-i18n="optHeading">Video Downloader settings</h1>
+
+    <section>
+      <h2 data-i18n="optGeneral">General</h2>
+      <label class="row">
+        <span data-i18n="optUiLanguage">Interface language</span>
+        <select id="uiLanguage">
+          <option value="auto" data-i18n="optUiLanguageAuto">Chrome's language</option>
+          <option value="en">English</option>
+          <option value="tr">Türkçe</option>
+        </select>
+      </label>
+      <p class="hint" data-i18n="optUiLanguageHint"></p>
+    </section>
+
+    <section>
+      <h2 data-i18n="optMergeSection">Merging and converting (ffmpeg.wasm)</h2>
+      <label class="row">
+        <input type="checkbox" id="mergeTracks" />
+        <span data-i18n="optMergeTracks"></span>
+      </label>
+      <p class="hint" data-i18n-html="optMergeTracksHint"></p>
+      <label class="row">
+        <input type="checkbox" id="preferH264" />
+        <span data-i18n="optPreferH264"></span>
+      </label>
+      <p class="hint" data-i18n="optPreferH264Hint"></p>
+      <label class="row">
+        <input type="checkbox" id="transcodeToH264" />
+        <span data-i18n="optTranscode"></span>
+      </label>
+      <p class="hint warn" data-i18n="optTranscodeHint"></p>
+    </section>
+
+    <section>
+      <h2 data-i18n="optDownloadSection">Downloading</h2>
+      <label class="row">
+        <span data-i18n="optConcurrency"></span>
+        <input type="number" id="concurrency" min="1" max="8" step="1" />
+      </label>
+      <p class="hint" data-i18n="optConcurrencyHint"></p>
+      <label class="row">
+        <input type="checkbox" id="stripJunk" />
+        <span data-i18n="optStripJunk"></span>
+      </label>
+      <p class="hint" data-i18n="optStripJunkHint"></p>
+      <label class="row">
+        <span data-i18n="optCooldown"></span>
+        <input type="number" id="maxCooldownMinutes" min="0" max="120" step="1" />
+      </label>
+      <p class="hint" data-i18n="optCooldownHint"></p>
+    </section>
+
+    <section>
+      <h2 data-i18n="optAudioSection">Audio</h2>
+      <label class="row">
+        <span data-i18n="optAudioLang"></span>
+        <select id="audioLang">
+          <option value="default" data-i18n="optAudioDefault"></option>
+          <option value="original" data-i18n="optAudioOriginal"></option>
+          <option value="tr" data-i18n="optAudioTurkish"></option>
+          <option value="en" data-i18n="optAudioEnglish"></option>
+        </select>
+      </label>
+      <p class="hint" data-i18n="optAudioHint"></p>
+    </section>
+
+    <section>
+      <h2 data-i18n="optSubtitlesSection">Subtitles</h2>
+      <label class="row column">
+        <span data-i18n="optSubtitleLangs"></span>
+        <input type="text" id="subtitleLangs" spellcheck="false" placeholder="tr, en" />
+      </label>
+      <p class="hint" data-i18n-html="optSubtitleLangsHint"></p>
+      <label class="row">
+        <span data-i18n="optSubtitleFormat"></span>
+        <select id="subtitleFormat">
+          <option value="srt">SRT (.srt)</option>
+          <option value="vtt">WebVTT (.vtt)</option>
+        </select>
+      </label>
+      <label class="row">
+        <input type="checkbox" id="embedSubtitles" />
+        <span data-i18n="optEmbedSubtitles"></span>
+      </label>
+      <p class="hint" data-i18n="optEmbedSubtitlesHint"></p>
+    </section>
+
+    <section>
+      <h2 data-i18n="optListSection">List</h2>
+      <label class="row">
+        <input type="checkbox" id="hideAds" />
+        <span data-i18n="optHideAds"></span>
+      </label>
+      <p class="hint" data-i18n="optHideAdsHint"></p>
+    </section>
+
+    <section>
+      <h2 data-i18n="optBadgeSection">In-page download button</h2>
+      <label class="row">
+        <span data-i18n="optBadgeMode"></span>
+        <select id="badgeMode">
+          <option value="hover" data-i18n="optBadgeHover"></option>
+          <option value="always" data-i18n="optBadgeAlways"></option>
+          <option value="off" data-i18n="optBadgeOff"></option>
+        </select>
+      </label>
+      <p class="hint" data-i18n="optBadgeHint"></p>
+      <label class="row column">
+        <span data-i18n="optBadgeHosts"></span>
+        <textarea id="badgeDisabledHosts" rows="3" spellcheck="false" placeholder="example.com&#10;other-site.net"></textarea>
+      </label>
+      <p class="hint" data-i18n="optBadgeHostsHint"></p>
+    </section>
+
+    <section>
+      <h2 data-i18n="optFilenameSection">File name</h2>
+      <label class="row column">
+        <span data-i18n="optTemplate"></span>
+        <input type="text" id="filenameTemplate" spellcheck="false" />
+      </label>
+      <p class="hint" data-i18n-html="optTemplateHint"></p>
+      <p class="preview"><span data-i18n="optPreview">Example:</span> <code id="preview"></code></p>
+      <button type="button" id="resetTemplate" class="link" data-i18n="optResetTemplate"></button>
+    </section>
+
+    <section>
+      <h2 data-i18n="optHistorySection">History</h2>
+      <label class="row">
+        <span data-i18n="optHistoryLimit"></span>
+        <input type="number" id="historyLimit" min="0" max="500" step="1" />
+      </label>
+      <button type="button" id="clearHistory" class="link" data-i18n="optClearHistory"></button>
+    </section>
+
+    <section>
+      <h2 data-i18n="optShortcutSection">Keyboard shortcut</h2>
+      <p class="hint" data-i18n-html="optShortcutHint"></p>
+    </section>
+
+    <p id="status" class="status" aria-live="polite"></p>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MPD xmlns="urn:mpeg:dash:schema:mpd:2011" type="static" mediaPresentationDuration="PT0H0M4.00S" minBufferTime="PT1.5S" profiles="urn:mpeg:dash:profile:isoff-on-demand:2011">
+  <Period duration="PT0H0M4.00S">
+    <AdaptationSet contentType="video" maxWidth="320" maxHeight="180">
+      <Representation id="video_180" mimeType="video/mp4" codecs="avc1.64000d" width="320" height="180" frameRate="15" bandwidth="300000">
+        <BaseURL>../dash-base/DASH_180.mp4</BaseURL>
+      </Representation>
+    </AdaptationSet>
+    <AdaptationSet contentType="audio">
+      <Representation id="audio_48" mimeType="audio/mp4" codecs="mp4a.40.2" audioSamplingRate="44100" bandwidth="48000">
+        <BaseURL>../dash-base/DASH_AUDIO_48.mp4</BaseURL>
+      </Representation>
+    </AdaptationSet>
+    <AdaptationSet contentType="text" mimeType="text/vtt" lang="tr">
+      <Role schemeIdUri="urn:mpeg:dash:role:2011" value="subtitle"/>
+      <Representation id="sub_tr" bandwidth="256"><BaseURL>tr.vtt</BaseURL></Representation>
+    </AdaptationSet>
+    <AdaptationSet contentType="text" mimeType="application/ttml+xml" lang="en" label="English">
+      <Representation id="sub_en" bandwidth="256"><BaseURL>en.ttml</BaseURL></Representation>
+    </AdaptationSet>
+    <AdaptationSet contentType="text" mimeType="application/mp4" lang="de">
+      <Representation id="sub_de" codecs="stpp" bandwidth="256"><BaseURL>de.mp4</BaseURL></Representation>
+    </AdaptationSet>
+  </Period>
+</MPD>

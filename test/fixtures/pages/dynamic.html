@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="tr">
+<head><meta charset="utf-8"><title>Dinamik Video</title></head>
+<body>
+  <h1>Video 1,5 saniye sonra eklenir</h1>
+  <div id="slot"></div>
+  <script>
+    setTimeout(() => {
+      const v = document.createElement('video');
+      v.src = '/media/sample.mp4';
+      v.preload = 'none';   // nothing is fetched: only the DOM scan can see it
+      v.controls = true;
+      document.getElementById('slot').appendChild(v);
+    }, 1500);
+  </script>
+</body>
+</html>

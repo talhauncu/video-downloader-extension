@@ -1,0 +1,50 @@
+{
+  "name": "video-downloader-extension",
+  "version": "0.8.1",
+  "private": true,
+  "description": "Chrome MV3 extension that downloads videos (MP4, HLS, DASH) and their subtitles from web pages",
+  "type": "module",
+  "scripts": {
+    "test": "node --import ./test/unit/setup.js --test \"test/unit/**/*.test.js\"",
+    "e2e": "playwright test",
+    "e2e:headed": "playwright test --headed",
+    "fixtures": "node test/fixtures/generate.js",
+    "serve": "node test/fixtures/server.js",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "typecheck": "tsc -p .",
+    "prepare": "simple-git-hooks",
+    "package": "node scripts/package.js",
+    "screenshots": "node scripts/screenshots.js"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@ffmpeg/core": "^0.12.10",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@playwright/test": "^1.58.0",
+    "@types/chrome": "^0.3.7",
+    "eslint": "^10.14.0",
+    "globals": "^17.14.0",
+    "lint-staged": "^17.6.0",
+    "mux.js": "^7.1.1",
+    "prettier": "^3.9.10",
+    "simple-git-hooks": "^2.14.0",
+    "typescript": "^7.0.2"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged"
+  },
+  "lint-staged": {
+    "*.{js,mjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,html,css,yml}": "prettier --write"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/talhauncu/video-downloader-extension.git"
+  },
+  "author": "Kadir Talha Uncu"
+}

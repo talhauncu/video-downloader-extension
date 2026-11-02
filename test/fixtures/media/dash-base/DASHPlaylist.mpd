@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MPD xmlns="urn:mpeg:dash:schema:mpd:2011" type="static" mediaPresentationDuration="PT0H0M4.00S" minBufferTime="PT1.5S" profiles="urn:mpeg:dash:profile:isoff-on-demand:2011">
+  <Period duration="PT0H0M4.00S">
+    <AdaptationSet segmentAlignment="true" subsegmentAlignment="true" subsegmentStartsWithSAP="1" maxWidth="640" maxHeight="360">
+      <Representation id="video_360" mimeType="video/mp4" codecs="avc1.64001e" width="640" height="360" frameRate="15" bandwidth="800000">
+        <BaseURL>DASH_360.mp4</BaseURL>
+        <SegmentBase indexRangeExact="true" indexRange="900-1000"><Initialization range="0-899"/></SegmentBase>
+      </Representation>
+      <Representation id="video_180" mimeType="video/mp4" codecs="avc1.64000d" width="320" height="180" frameRate="15" bandwidth="300000">
+        <BaseURL>DASH_180.mp4</BaseURL>
+        <SegmentBase indexRangeExact="true" indexRange="900-1000"><Initialization range="0-899"/></SegmentBase>
+      </Representation>
+    </AdaptationSet>
+    <AdaptationSet segmentAlignment="true" subsegmentAlignment="true" subsegmentStartsWithSAP="1">
+      <Representation id="audio_48" mimeType="audio/mp4" codecs="mp4a.40.2" audioSamplingRate="44100" bandwidth="48000">
+        <AudioChannelConfiguration schemeIdUri="urn:mpeg:dash:23003:3:audio_channel_configuration:2011" value="1"/>
+        <BaseURL>DASH_AUDIO_48.mp4</BaseURL>
+        <SegmentBase indexRangeExact="true" indexRange="700-800"><Initialization range="0-699"/></SegmentBase>
+      </Representation>
+    </AdaptationSet>
+  </Period>
+</MPD>

@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="tr">
+<head><meta charset="utf-8"><title>Tam Ekran Oynatıcı</title>
+<style>#wrap { width: 640px; height: 360px; background: #000; position: relative; } #wrap video { width: 100%; height: 100%; }
+#wrap .overlay { position: absolute; inset: 0; } /* a player overlay above the video, like real players */</style></head>
+<body>
+  <div id="wrap">
+    <video id="v" src="/media/sample.mp4" preload="auto" muted></video>
+    <div class="overlay"></div>
+  </div>
+  <button id="fs" type="button">Tam ekran</button>
+  <script>document.getElementById('fs').addEventListener('click', () => document.getElementById('wrap').requestFullscreen());</script>
+</body>
+</html>

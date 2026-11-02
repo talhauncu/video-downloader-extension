@@ -1,0 +1,2 @@
+@ffmpeg/ffmpeg 0.12.15 (dist/esm)
+@ffmpeg/core   0.12.10 (dist/esm, single-threaded)

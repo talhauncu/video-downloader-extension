@@ -1,0 +1,81 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+# The jobs only read the repository.
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm test
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+
+  package:
+    # Dry run of the release package: the zip builds and holds a loadable extension.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm run package
+      - name: Zip holds the manifest, locales, sources and licenses
+        run: |
+          zip=$(ls dist/video-downloader-*.zip)
+          unzip -l "$zip" | grep -E ' manifest\.json$'
+          unzip -l "$zip" | grep -E ' _locales/en/messages\.json$'
+          unzip -l "$zip" | grep -E ' src/background/service-worker\.js$'
+          unzip -l "$zip" | grep -E ' licenses/GPL-2\.0\.txt$'
+          ! unzip -l "$zip" | grep -E ' (test|node_modules)/'
+      - name: A tag that does not match the manifest is refused
+        run: '! node scripts/package.js --check-tag v0.0.0'
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Playwright version
+        id: pw
+        run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> "$GITHUB_OUTPUT"
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+      - name: Install Chromium (and system deps)
+        run: npx playwright install --with-deps chromium --no-shell
+        timeout-minutes: 8
+      - run: npm run e2e
+        timeout-minutes: 8
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-results
+          path: test-results/
+          retention-days: 7

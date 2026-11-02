@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"><title>Instagram Benzeri Akış</title>
+  <script type="application/json" data-sjs>{"data":{"xdt_api__v1__feed__timeline__connection":{"edges":[
+    {"node":{"media":{"pk":"901","code":"SPONSOR001","video_duration":60,"original_width":320,"original_height":180,"user":{"username":"sponsor"},"caption":{"text":"Sponsorlu uzun video"},"video_versions":[{"type":101,"width":320,"height":180,"url":"/media/dash-base/DASH_360.mp4?f=clear"}]}}},
+    {"node":{"media":{"pk":"902","code":"FEEDPOST02","video_duration":4,"original_width":320,"original_height":180,"user":{"username":"ikinci"},"caption":{"text":"İkinci gönderi"},"video_versions":[{"type":101,"width":320,"height":180,"url":"/media/sample.webm?f=two"}]}}},
+    {"node":{"media":{"pk":"903","code":"FEEDPOST03","video_duration":4,"original_width":320,"original_height":180,"user":{"username":"ucuncu"},"caption":{"text":"Üçüncü gönderi"},"video_versions":[{"type":101,"width":320,"height":180,"url":"/media/dash-base/DASH_180.mp4?f=three"}]}}}
+  ]}}}</script>
+  <style>article { width: 360px; margin: 24px auto; border: 1px solid #ccc; } video { width: 360px; height: 450px; background: #000; display: block; }</style>
+</head>
+<body>
+  <main id="feed"></main>
+  <script>
+    // Feed posts: header with the user link, an MSE (blob:) video, footer with the post link.
+    const posts = [['sponsor', 'SPONSOR001', 60], ['ikinci', 'FEEDPOST02', 4], ['ucuncu', 'FEEDPOST03', 4]];
+    for (const [user, code, duration] of posts) {
+      const article = document.createElement('article');
+      // Like reels: the track's page (/reels/audio/<id>/) is linked before the post itself.
+      article.innerHTML = `<header><a href="/${user}/">${user}</a> · <a href="/reels/audio/1234567890${code.length}/">Orijinal ses</a></header><div class="media"><video muted playsinline data-code="${code}"></video></div>`
+        + `<footer><a href="/p/${code}/"><time>2 sa</time></a></footer>`;
+      document.getElementById('feed').appendChild(article);
+      const video = article.querySelector('video');
+      const ms = new MediaSource();
+      video.src = URL.createObjectURL(ms);
+      ms.addEventListener('sourceopen', () => { ms.duration = duration; });
+    }
+    document.body.dataset.feedReady = 'true';
+  </script>
+</body>
+</html>

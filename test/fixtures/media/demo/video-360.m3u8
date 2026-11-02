@@ -1,0 +1,15 @@
+#EXTM3U
+#EXT-X-VERSION:7
+#EXT-X-TARGETDURATION:1
+#EXT-X-MEDIA-SEQUENCE:0
+#EXT-X-PLAYLIST-TYPE:VOD
+#EXT-X-MAP:URI="../hls-fmp4/180p/init.mp4"
+#EXTINF:1.000000,
+../hls-fmp4/180p/seg0.m4s?delay=800
+#EXTINF:1.000000,
+../hls-fmp4/180p/seg1.m4s?delay=800
+#EXTINF:1.000000,
+../hls-fmp4/180p/seg2.m4s?delay=800
+#EXTINF:1.000000,
+../hls-fmp4/180p/seg3.m4s?delay=800
+#EXT-X-ENDLIST

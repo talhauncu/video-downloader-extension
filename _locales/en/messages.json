@@ -1,0 +1,704 @@
+{
+  "etaSeconds": {
+    "message": "~$1 s"
+  },
+  "etaMinutes": {
+    "message": "~$1 min"
+  },
+  "etaHoursMinutes": {
+    "message": "~$1 h $2 min"
+  },
+  "etaHours": {
+    "message": "~$1 h"
+  },
+  "percent": {
+    "message": "$1%"
+  },
+  "progressMerging": {
+    "message": "Merging $1"
+  },
+  "progressServerWait": {
+    "message": "Server asks to wait: $1 s"
+  },
+  "progressPieces": {
+    "message": "$1/$2 pieces"
+  },
+  "progressRemaining": {
+    "message": "$1 left"
+  },
+  "progressWaiting": {
+    "message": "Waiting…"
+  },
+  "progressSaving": {
+    "message": "Saving…"
+  },
+  "progressDownloading": {
+    "message": "Downloading…"
+  },
+  "progressWithPageHeaders": {
+    "message": "Downloading with the page's headers"
+  },
+  "progressInterrupted": {
+    "message": "Download interrupted"
+  },
+  "noteLive": {
+    "message": "Live stream, cannot be downloaded"
+  },
+  "noteEncrypted": {
+    "message": "Encrypted stream ($1), cannot be downloaded"
+  },
+  "noteDrm": {
+    "message": "DRM protected, cannot be downloaded"
+  },
+  "badgeNoteSeparateAudio": {
+    "message": "Audio comes separately and is merged"
+  },
+  "badgePostPending": {
+    "message": "This post's video data has not arrived yet; try again in a few seconds (reload the page if it does not help)"
+  },
+  "badgeUnmatched": {
+    "message": "This player's stream has not been caught yet; pick it from the list (toolbar icon)"
+  },
+  "badgeNotListed": {
+    "message": "The video is not in the list yet; try again in a few seconds"
+  },
+  "badgeNoteAudio": {
+    "message": "Audio: $1"
+  },
+  "badgeNoteSubtitles": {
+    "message": "Subtitles: $1"
+  },
+  "audioTrackFallback": {
+    "message": "Audio"
+  },
+  "variantDefault": {
+    "message": "default"
+  },
+  "errMpdRoot": {
+    "message": "MPD root element not found"
+  },
+  "errMpdNoPeriod": {
+    "message": "No Period in the MPD"
+  },
+  "languageUnknown": {
+    "message": "Unknown language"
+  },
+  "errSubtitleFormat": {
+    "message": "Subtitle format not recognised"
+  },
+  "extName": {
+    "message": "Video Downloader"
+  },
+  "extDescription": {
+    "message": "Downloads the videos on a page (MP4, HLS, DASH) in one click."
+  },
+  "commandDownloadBest": {
+    "message": "Download the best video of the open tab"
+  },
+  "errItemNotFoundReload": {
+    "message": "Item not found. Reload the page and try again."
+  },
+  "errItemNotFound": {
+    "message": "Item not found."
+  },
+  "errNotAStream": {
+    "message": "This item is not a stream"
+  },
+  "errCannotDownloadKind": {
+    "message": "This kind cannot be downloaded."
+  },
+  "errTabNotFound": {
+    "message": "Tab not found"
+  },
+  "errFileGone": {
+    "message": "The file is no longer there"
+  },
+  "errNoVideoInTab": {
+    "message": "No downloadable video in this tab"
+  },
+  "errPlayerUrlExpired": {
+    "message": "The player's address has expired (HTTP $1); reload the page and try again"
+  },
+  "errManifest": {
+    "message": "Could not get the manifest (HTTP $1)"
+  },
+  "errMasterEmpty": {
+    "message": "Master playlist is empty"
+  },
+  "errLiveStream": {
+    "message": "Live streams cannot be downloaded"
+  },
+  "errMpdNothing": {
+    "message": "No downloadable representation in the MPD"
+  },
+  "errDrmStream": {
+    "message": "DRM-protected streams cannot be downloaded"
+  },
+  "errVideoRepresentation": {
+    "message": "Could not resolve the video representation"
+  },
+  "errAudioRepresentation": {
+    "message": "Could not resolve the audio representation"
+  },
+  "errNoSubtitles": {
+    "message": "No subtitles to download"
+  },
+  "errJobNotFound": {
+    "message": "Job not found."
+  },
+  "warnMergeFailed": {
+    "message": "Merging failed, the files were saved separately: $1"
+  },
+  "warnSubtitleFailed": {
+    "message": "Subtitles could not be downloaded$1: $2"
+  },
+  "subtitleJobName": {
+    "message": "$1 ($2 subtitles)"
+  },
+  "subtitleGeneric": {
+    "message": "Subtitles"
+  },
+  "fileSuffixAudio": {
+    "message": "audio"
+  },
+  "fileSuffixVideo": {
+    "message": "video"
+  },
+  "fileSuffixSubtitle": {
+    "message": "subtitles"
+  },
+  "indicatorTitle": {
+    "message": "$1 — $2 downloads running ($3): $4"
+  },
+  "errNothingToMerge": {
+    "message": "Nothing to merge"
+  },
+  "errFfmpegFailed": {
+    "message": "ffmpeg failed ($1): $2"
+  },
+  "errManifestPiecesChanged": {
+    "message": "The number of pieces changed when the manifest was re-read"
+  },
+  "errDashNoPieces": {
+    "message": "No pieces in the DASH representation"
+  },
+  "stepPieceOf": {
+    "message": "Piece $1/$2"
+  },
+  "stepPieceIndex": {
+    "message": "Piece $1"
+  },
+  "stepPiece": {
+    "message": "Piece"
+  },
+  "stepKey": {
+    "message": "Key"
+  },
+  "stepInit": {
+    "message": "Initialization piece"
+  },
+  "errStepNetwork": {
+    "message": "$1 could not be fetched (network error)"
+  },
+  "errStepHttp": {
+    "message": "$1 could not be fetched (HTTP $2)"
+  },
+  "cancelled": {
+    "message": "Cancelled"
+  },
+  "errRefreshedRepresentation": {
+    "message": "No representation found in the re-read manifest"
+  },
+  "errJobRunning": {
+    "message": "This job is already running"
+  },
+  "errNoPieces": {
+    "message": "Nothing to download"
+  },
+  "errMuxjsMissing": {
+    "message": "mux.js could not be loaded"
+  },
+  "errRemux": {
+    "message": "Remux error: $1"
+  },
+  "errPlayerUrlExpiredShort": {
+    "message": "The player's address has expired; reload the page and try again"
+  },
+  "errEncryptionUnsupported": {
+    "message": "Encryption not supported: $1"
+  },
+  "errPlaylistNoPieces": {
+    "message": "No pieces in the playlist"
+  },
+  "errPlaylistPiecesChanged": {
+    "message": "The number of pieces changed when the playlist was re-read ($1 → $2)"
+  },
+  "errAesKeySize": {
+    "message": "The AES-128 key is not 16 bytes"
+  },
+  "errLiveSubtitles": {
+    "message": "Live subtitle streams cannot be downloaded"
+  },
+  "errNoSubtitlePieces": {
+    "message": "No subtitle pieces"
+  },
+  "errSubtitleEmpty": {
+    "message": "The subtitles have no lines"
+  },
+  "badgeDownload": {
+    "message": "Download"
+  },
+  "badgeChooseQuality": {
+    "message": "Choose quality"
+  },
+  "badgeChooseQualityNote": {
+    "message": "Choose quality · $1"
+  },
+  "badgeCancel": {
+    "message": "× Cancel"
+  },
+  "badgeStarting": {
+    "message": "Starting…"
+  },
+  "badgeClickToCancel": {
+    "message": "Click to cancel"
+  },
+  "badgeConfirmCancel": {
+    "message": "Cancel it?"
+  },
+  "badgeClickAgainToConfirm": {
+    "message": "Click again to confirm"
+  },
+  "badgeCancelling": {
+    "message": "Cancelling…"
+  },
+  "badgeCancelFailed": {
+    "message": "Could not cancel"
+  },
+  "badgeFileNotFound": {
+    "message": "File not found"
+  },
+  "badgeCannotDownload": {
+    "message": "This video cannot be downloaded"
+  },
+  "badgeStartFailed": {
+    "message": "Could not start the download"
+  },
+  "badgeStatusUnavailable": {
+    "message": "Could not get the download's state"
+  },
+  "badgeDoneFile": {
+    "message": "$1 · click to show it in its folder"
+  },
+  "jobStateDone": {
+    "message": "Done"
+  },
+  "badgeDownloaded": {
+    "message": "Downloaded"
+  },
+  "jobStateError": {
+    "message": "Error"
+  },
+  "badgeRetry": {
+    "message": "Retry"
+  },
+  "badgeShowInFolder": {
+    "message": "Show in folder"
+  },
+  "badgeErrorRetry": {
+    "message": "$1 · click to try again"
+  },
+  "badgeOk": {
+    "message": "OK"
+  },
+  "badgeHint": {
+    "message": "The download continues in the background: it goes on even if you reload or close the page. Follow it on the toolbar icon (green percentage)."
+  },
+  "popupDownloads": {
+    "message": "Downloads"
+  },
+  "popupViewRecommended": {
+    "message": "Recommended"
+  },
+  "popupViewAll": {
+    "message": "All"
+  },
+  "popupRecommendedEmpty": {
+    "message": "No featured video on this page; see \"Other\"."
+  },
+  "popupOthers": {
+    "message": "Other"
+  },
+  "popupEmpty": {
+    "message": "No video found in this tab."
+  },
+  "popupRecent": {
+    "message": "Recent downloads"
+  },
+  "popupHistoryClear": {
+    "message": "clear"
+  },
+  "popupHistoryEmpty": {
+    "message": "No downloads yet."
+  },
+  "popupClearList": {
+    "message": "Clear list"
+  },
+  "popupHistory": {
+    "message": "History"
+  },
+  "popupDebug": {
+    "message": "Debug info"
+  },
+  "popupDebugTitle": {
+    "message": "Copies technical details for a bug report to the clipboard"
+  },
+  "popupOptions": {
+    "message": "Settings"
+  },
+  "popupShowInFolder": {
+    "message": "Show in folder"
+  },
+  "popupMainVideo": {
+    "message": "Main video"
+  },
+  "popupAudioLanguage": {
+    "message": "Audio language"
+  },
+  "popupCancel": {
+    "message": "Cancel"
+  },
+  "kindVideo": {
+    "message": "Video"
+  },
+  "kindAudio": {
+    "message": "Audio"
+  },
+  "kindSegment": {
+    "message": "Piece"
+  },
+  "kindBlob": {
+    "message": "Stream"
+  },
+  "kindSubtitle": {
+    "message": "Subtitles"
+  },
+  "jobStateDownloading": {
+    "message": "Downloading"
+  },
+  "jobStateSaving": {
+    "message": "Saving"
+  },
+  "jobStateMerging": {
+    "message": "Merging"
+  },
+  "jobStateWaiting": {
+    "message": "Waiting"
+  },
+  "errUnknown": {
+    "message": "Unknown error"
+  },
+  "metaPieces": {
+    "message": "$1 pieces"
+  },
+  "popupSubtitles": {
+    "message": "Subtitles:"
+  },
+  "popupForced": {
+    "message": " · forced"
+  },
+  "popupDescribing": {
+    "message": "Reading…"
+  },
+  "errManifestUnreadable": {
+    "message": "Could not read the manifest: $1"
+  },
+  "noteSubtitleStream": {
+    "message": "Subtitle stream"
+  },
+  "noteSeparateAudio": {
+    "message": "Audio comes as a separate file"
+  },
+  "noteAesEncrypted": {
+    "message": "AES-128 encrypted, decrypted while downloading"
+  },
+  "noteAudioOnly": {
+    "message": "Audio only"
+  },
+  "noteMp4Subtitles": {
+    "message": "$1 subtitles inside MP4 (not supported)"
+  },
+  "siteNoteReload": {
+    "message": "Instagram: the extension was loaded after this tab was opened. Reload the page (⌘R) for complete files, then open the popup again."
+  },
+  "siteNoteNoEntries": {
+    "message": "Instagram: no complete file data on this page, only raw pieces are listed. Try opening the Reel and reloading the page."
+  },
+  "popupPlayerStream": {
+    "message": "Player stream"
+  },
+  "noteBlob": {
+    "message": "Segmented stream; see the HLS/DASH entry caught from the network"
+  },
+  "noteQuickTime": {
+    "message": "$1: QuickTime will not open it, play it in VLC"
+  },
+  "noteLikelyAd": {
+    "message": "Probably an ad"
+  },
+  "popupNotDownloadable": {
+    "message": "Not downloadable"
+  },
+  "jobOtherTab": {
+    "message": "Other tab"
+  },
+  "jobOtherTabSite": {
+    "message": "Other tab · $1"
+  },
+  "jobFfmpeg": {
+    "message": "ffmpeg $1"
+  },
+  "jobRateLimit": {
+    "message": "Server rate limit (HTTP $1): waiting $2 s"
+  },
+  "jobRateLimitOf": {
+    "message": "Server rate limit (HTTP $1): waiting $2 s ($3/$4)"
+  },
+  "jobTranscoded": {
+    "message": "Converted to H.264"
+  },
+  "jobFileOf": {
+    "message": "file $1/$2"
+  },
+  "jobAudio": {
+    "message": "audio: $1"
+  },
+  "jobSubtitles": {
+    "message": "subtitles: $1"
+  },
+  "jobEmbedded": {
+    "message": "Subtitles embedded: $1"
+  },
+  "jobRetries": {
+    "message": "$1 retries"
+  },
+  "jobSpacing": {
+    "message": "spacing $1 ms"
+  },
+  "jobRefreshes": {
+    "message": "$1 playlist refreshes"
+  },
+  "jobMirrorSwitches": {
+    "message": "$1 mirror switches"
+  },
+  "popupStarting": {
+    "message": "Starting…"
+  },
+  "popupPlusSubtitles": {
+    "message": " (+$1 subtitles)"
+  },
+  "popupSubtitleDownloading": {
+    "message": "Downloading subtitles"
+  },
+  "popupStreamDownloading": {
+    "message": "Downloading stream"
+  },
+  "popupStatusFiles": {
+    "message": "$1 ($2 files): $3"
+  },
+  "popupStatusFile": {
+    "message": "$1: $2"
+  },
+  "popupStarted": {
+    "message": "Started"
+  },
+  "popupDownloadStarted": {
+    "message": "Download started: $1"
+  },
+  "popupSubtitleStartFailed": {
+    "message": "Subtitles could not start: $1"
+  },
+  "popupDebugCopied": {
+    "message": "Debug info copied to the clipboard."
+  },
+  "popupDebugSelect": {
+    "message": "No clipboard access; the text is selected below, copy it."
+  },
+  "errNoActiveTab": {
+    "message": "No active tab."
+  },
+  "optTitle": {
+    "message": "Video Downloader – Settings"
+  },
+  "optHeading": {
+    "message": "Video Downloader settings"
+  },
+  "optGeneral": {
+    "message": "General"
+  },
+  "optUiLanguage": {
+    "message": "Interface language"
+  },
+  "optUiLanguageAuto": {
+    "message": "Chrome's language"
+  },
+  "optUiLanguageHint": {
+    "message": "English and Turkish are available; with \"Chrome's language\" any other language shows English."
+  },
+  "optMergeSection": {
+    "message": "Merging and converting (ffmpeg.wasm)"
+  },
+  "optMergeTracks": {
+    "message": "Merge separately downloaded video and audio into one MP4"
+  },
+  "optMergeTracksHint": {
+    "message": "Reddit and some HLS streams serve video and audio separately. When off, two files arrive (<code>-video.mp4</code>, <code>-audio.m4a</code>)."
+  },
+  "optPreferH264": {
+    "message": "Prefer the H.264 quality (DASH and HLS)"
+  },
+  "optPreferH264Hint": {
+    "message": "Sites like Instagram serve the same video as VP9 and H.264, some film players give the top quality as AV1; H.264 opens in QuickTime without converting. AV1/HEVC/VP9 qualities are named in the quality menu."
+  },
+  "optTranscode": {
+    "message": "Convert non-H.264 video (VP9, AV1) to H.264"
+  },
+  "optTranscodeHint": {
+    "message": "QuickTime does not play VP9/AV1; converting happens in the browser and can take minutes for long videos. Applies to stream (HLS/DASH) downloads only."
+  },
+  "optDownloadSection": {
+    "message": "Downloading"
+  },
+  "optConcurrency": {
+    "message": "Pieces downloaded at the same time"
+  },
+  "optConcurrencyHint": {
+    "message": "1–8. Lower it for slow servers, raise it for fast CDNs."
+  },
+  "optStripJunk": {
+    "message": "Remove junk bytes at the start of pieces"
+  },
+  "optStripJunkHint": {
+    "message": "Some hosts put non-video bytes in front of segments; when on, everything up to the first valid TS/MP4 data is dropped."
+  },
+  "optCooldown": {
+    "message": "Longest wait on a rate limit (minutes)"
+  },
+  "optCooldownHint": {
+    "message": "When a server says \"too many requests\" (429), the job first spaces its requests, then waits and continues until this budget is used. 0: no long waits, the job fails at once."
+  },
+  "optAudioSection": {
+    "message": "Audio"
+  },
+  "optAudioLang": {
+    "message": "Audio language"
+  },
+  "optAudioDefault": {
+    "message": "The site's default"
+  },
+  "optAudioOriginal": {
+    "message": "Original (not the dub)"
+  },
+  "optAudioTurkish": {
+    "message": "Turkish (dub)"
+  },
+  "optAudioEnglish": {
+    "message": "English"
+  },
+  "optAudioHint": {
+    "message": "When a stream has several audio languages (for example a dub and the original), the in-page button and the shortcut take this one; the popup's audio menu opens on it. Original: a track named \"Original\", else the first one that is not Turkish. If the site's buttons open a separate player (one audio track), pick that option on the site first."
+  },
+  "optSubtitlesSection": {
+    "message": "Subtitles"
+  },
+  "optSubtitleLangs": {
+    "message": "Languages taken automatically"
+  },
+  "optSubtitleLangsHint": {
+    "message": "Language codes, comma separated (<code>tr, en</code>); the order is the priority. <code>*</code> all languages, empty none. The in-page button and the shortcut take these; the popup ticks them in advance."
+  },
+  "optSubtitleFormat": {
+    "message": "Format"
+  },
+  "optEmbedSubtitles": {
+    "message": "Embed subtitles in the MP4"
+  },
+  "optEmbedSubtitlesHint": {
+    "message": "Stream (HLS/DASH) downloads only; the subtitles do not arrive as separate files and are picked from the subtitle menu in QuickTime and VLC. Plain MP4 downloads always get separate subtitle files."
+  },
+  "optListSection": {
+    "message": "List"
+  },
+  "optHideAds": {
+    "message": "Fold ad videos under \"Other\""
+  },
+  "optHideAdsHint": {
+    "message": "Banner-sized (728×90, 300×250 …), very short and small, or ad-server videos are taken out of the recommended list; they stay in \"Other\" and in the \"All\" view."
+  },
+  "optBadgeSection": {
+    "message": "In-page download button"
+  },
+  "optBadgeMode": {
+    "message": "Show"
+  },
+  "optBadgeHover": {
+    "message": "While the pointer is over the video"
+  },
+  "optBadgeAlways": {
+    "message": "Always"
+  },
+  "optBadgeOff": {
+    "message": "Off"
+  },
+  "optBadgeHint": {
+    "message": "A small \"Download\" button at the video's top-left corner; ad videos get none."
+  },
+  "optBadgeHosts": {
+    "message": "Sites where the button is hidden"
+  },
+  "optBadgeHostsHint": {
+    "message": "One domain per line; subdomains are included (instagram.com → www.instagram.com)."
+  },
+  "optFilenameSection": {
+    "message": "File name"
+  },
+  "optTemplate": {
+    "message": "Template"
+  },
+  "optTemplateHint": {
+    "message": "Available fields: <code>{site}</code> <code>{title}</code> <code>{date}</code> <code>{time}</code> <code>{quality}</code> <code>{id}</code>. Empty fields and their separators are skipped."
+  },
+  "optPreview": {
+    "message": "Example:"
+  },
+  "optResetTemplate": {
+    "message": "Back to default"
+  },
+  "optHistorySection": {
+    "message": "History"
+  },
+  "optHistoryLimit": {
+    "message": "Downloads to keep"
+  },
+  "optClearHistory": {
+    "message": "Clear history"
+  },
+  "optShortcutSection": {
+    "message": "Keyboard shortcut"
+  },
+  "optShortcutHint": {
+    "message": "Default <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd>: downloads the best video of the open tab. To change it: <code>chrome://extensions/shortcuts</code>."
+  },
+  "optPreviewTitle": {
+    "message": "Sample video title"
+  },
+  "optSaved": {
+    "message": "Saved"
+  },
+  "optSaveFailed": {
+    "message": "Could not save: $1"
+  },
+  "optHistoryCleared": {
+    "message": "History cleared"
+  }
+}

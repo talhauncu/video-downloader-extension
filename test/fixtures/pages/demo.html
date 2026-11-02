@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Sample Film — Demo</title>
+  <style>
+    body { margin: 0; font: 15px/1.5 system-ui, -apple-system, sans-serif; background: #0f1115; color: #e8eaed; }
+    header { padding: 14px 32px; background: #161a21; border-bottom: 1px solid #262b35; font-weight: 600; letter-spacing: .02em; }
+    main { max-width: 900px; margin: 28px auto; padding: 0 24px; }
+    h1 { font-size: 26px; margin: 0 0 6px; }
+    .meta { color: #9aa0a6; margin: 0 0 18px; }
+    video { width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 10px; display: block; }
+    .tabs { display: flex; gap: 8px; margin-top: 14px; }
+    .tabs span { padding: 6px 12px; border: 1px solid #333a46; border-radius: 6px; color: #c4c9d0; }
+    .tabs span.on { background: #2b6cff; border-color: #2b6cff; color: #fff; }
+  </style>
+</head>
+<body>
+  <header>Demo Video Site</header>
+  <main>
+    <h1>Sample Film</h1>
+    <p class="meta">2026 · 1h 48min · Turkish dub · Original · Subtitles</p>
+    <video id="v" poster="/media/demo/poster.jpg"></video>
+    <div class="tabs"><span class="on">TR Dub</span><span>TR Subtitles</span><span>EN Subtitles</span><span>Original</span></div>
+  </main>
+  <script>
+    // An hls.js-like player (fixture for the README images): a MediaSource on
+    // the <video>, the master and its playlists fetched like a real player.
+    const ms = new MediaSource();
+    const video = document.getElementById('v');
+    video.src = URL.createObjectURL(ms);
+    ms.addEventListener('sourceopen', () => { ms.duration = 4; });
+    // ?src=: master-muxed.m3u8 (one track) for the badge GIF, master.m3u8 (dub/original, subtitles) otherwise.
+    const src = new URLSearchParams(location.search).get('src') ?? '/media/demo/master.m3u8';
+    (async () => {
+      const masterText = await (await fetch(src)).text();
+      const base = new URL(src, location.href);
+      const refs = [...masterText.matchAll(/URI="([^"]+)"/g)].map((m) => m[1])
+        .concat(masterText.split('\n').filter((l) => l && !l.startsWith('#')));
+      await Promise.all(refs.map((r) => fetch(new URL(r, base)).then((x) => x.text())));
+      document.body.dataset.loaded = 'true';
+    })();
+  </script>
+</body>
+</html>

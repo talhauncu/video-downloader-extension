@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="tr">
+<head><meta charset="utf-8"><title>Instagram Tarzı Oynatıcı</title></head>
+<body>
+  <h1>Byte aralıklarıyla çekilen ayrı görüntü ve ses dosyaları</h1>
+  <script>
+    // A MediaSource player would fetch chunks like this; the extension must
+    // collapse them into whole-file entries.
+    const efg = (tag) => btoa(JSON.stringify({ vencode_tag: tag }));
+    const v = `/media/sample.mp4?efg=${efg('dash_vp9-basic-gen2_q80')}&_nc_ht=x`;
+    const a = `/media/sample-audio.m4a?efg=${efg('dash_ln_heaac_vbr3_audio')}&_nc_ht=x`;
+    Promise.all([
+      fetch(`${v}&bytestart=0&byteend=2047`), fetch(`${v}&bytestart=2048&byteend=8191`),
+      fetch(`${a}&bytestart=0&byteend=1023`),
+    ]).then(() => { document.body.dataset.chunksLoaded = 'true'; });
+  </script>
+</body>
+</html>

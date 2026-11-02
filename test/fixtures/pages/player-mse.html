@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="tr">
+<head><meta charset="utf-8"><title>MSE Oynatıcı (iframe)</title></head>
+<body style="margin:0;background:#000">
+  <video id="v" controls width="640" height="360"></video>
+  <script>
+    // A hls.js-like player: MediaSource blob on the <video>, playlists fetched with XHR.
+    const ms = new MediaSource();
+    const video = document.getElementById('v');
+    video.src = URL.createObjectURL(ms);
+    const duration = Number(new URLSearchParams(location.search).get('duration') || 4);
+    ms.addEventListener('sourceopen', () => { ms.duration = duration; });
+
+    const src = new URLSearchParams(location.search).get('src');
+    (async () => {
+      const masterText = await (await fetch(src)).text();
+      const base = new URL(src, location.href);
+      const refs = [...masterText.matchAll(/URI="([^"]+)"/g)].map((m) => m[1])
+        .concat(masterText.split('\n').filter((l) => l && !l.startsWith('#')));
+      const texts = await Promise.all(refs.map((r) => fetch(new URL(r, base)).then((x) => x.text())));
+      // ?deep=1: also fetch the WebVTT segments of subtitle playlists, as players do.
+      if (new URLSearchParams(location.search).get('deep')) {
+        const segments = texts.flatMap((t, i) => t.split('\n').filter((l) => /\.vtt(\?|$)/.test(l)).map((l) => new URL(l, new URL(refs[i], base))));
+        await Promise.all(segments.map((u) => fetch(u).then((x) => x.text())));
+        document.body.dataset.segmentsLoaded = String(segments.length);
+      }
+      document.body.dataset.playlistsLoaded = String(refs.length);
+    })();
+  </script>
+</body>
+</html>

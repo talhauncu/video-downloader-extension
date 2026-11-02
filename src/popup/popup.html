@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title data-i18n="extName">Video Downloader</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="header">
+      <h1 data-i18n="extName">Video Downloader</h1>
+      <span id="tab-info" class="tab-info"></span>
+    </header>
+
+    <main>
+      <section id="jobs-section" class="jobs" hidden>
+        <h2 data-i18n="popupDownloads">Downloads</h2>
+        <ul id="jobs-list" class="jobs-list"></ul>
+      </section>
+
+      <p id="site-note" class="site-note" hidden></p>
+      <div id="view-toggle" class="view-toggle" role="tablist" hidden>
+        <button
+          id="view-recommended"
+          class="view-btn active"
+          type="button"
+          role="tab"
+          aria-selected="true"
+          data-i18n="popupViewRecommended"
+        >
+          Recommended
+        </button>
+        <button id="view-all" class="view-btn" type="button" role="tab" aria-selected="false">
+          <span data-i18n="popupViewAll">All</span> (<span id="all-count">0</span>)
+        </button>
+      </div>
+      <ul id="media-list" class="media-list" hidden></ul>
+      <p id="recommended-empty" class="empty-state small" hidden data-i18n="popupRecommendedEmpty"></p>
+      <details id="others" class="others" hidden>
+        <summary><span data-i18n="popupOthers">Other</span> (<span id="others-count">0</span>)</summary>
+        <ul id="others-list" class="media-list"></ul>
+      </details>
+      <p id="empty-state" class="empty-state" data-i18n="popupEmpty"></p>
+      <p id="error-state" class="error-state" hidden></p>
+      <p id="status" class="status" hidden></p>
+    </main>
+
+    <section id="history-section" class="history" hidden>
+      <h2>
+        <span data-i18n="popupRecent">Recent downloads</span>
+        <button id="history-clear" class="link" type="button" data-i18n="popupHistoryClear">clear</button>
+      </h2>
+      <ul id="history-list" class="history-list"></ul>
+      <p id="history-empty" class="empty-state small" data-i18n="popupHistoryEmpty"></p>
+    </section>
+
+    <footer class="footer">
+      <span class="spacer"></span>
+      <button id="clear" class="btn btn-ghost" type="button" hidden data-i18n="popupClearList">Clear list</button>
+    </footer>
+    <nav class="toolbar">
+      <button id="history-toggle" class="link" type="button" data-i18n="popupHistory">History</button>
+      <button id="debug" class="link" type="button" data-i18n="popupDebug" data-i18n-title="popupDebugTitle">Debug info</button>
+      <button id="options" class="link" type="button" data-i18n="popupOptions">Settings</button>
+    </nav>
+    <textarea id="debug-out" hidden readonly></textarea>
+
+    <template id="history-template">
+      <li class="history-item">
+        <button class="history-name link" type="button" data-i18n-title="popupShowInFolder"></button>
+        <span class="history-meta"></span>
+      </li>
+    </template>
+
+    <template id="item-template">
+      <li class="item">
+        <div class="item-main">
+          <span class="kind"></span>
+          <span class="badge here" hidden data-i18n="popupMainVideo">Main video</span>
+          <span class="name"></span>
+        </div>
+        <div class="item-meta">
+          <span class="size"></span>
+          <span class="note"></span>
+        </div>
+        <div class="item-subs" hidden></div>
+        <div class="item-actions">
+          <select class="quality" hidden></select>
+          <select class="audio" hidden data-i18n-title="popupAudioLanguage"></select>
+          <button class="btn download" type="button" data-i18n="badgeDownload">Download</button>
+        </div>
+      </li>
+    </template>
+
+    <template id="job-template">
+      <li class="job">
+        <div class="job-head">
+          <span class="job-name"></span>
+          <span class="job-state"></span>
+        </div>
+        <div class="progress"><div class="bar"></div></div>
+        <div class="job-foot">
+          <span class="job-detail"></span>
+          <button class="btn btn-ghost cancel" type="button" data-i18n="popupCancel">Cancel</button>
+        </div>
+      </li>
+    </template>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

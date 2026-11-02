@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="tr">
+<head><meta charset="utf-8"><title>Oynatıcı (iframe)</title></head>
+<body style="margin:0;background:#000">
+  <video id="v" controls width="640" height="360"></video>
+  <script>
+    // Real players request the disguised playlist with XHR from inside the iframe.
+    const src = new URLSearchParams(location.search).get('src') || '/media/hls-fmp4/master.txt';
+    fetch(src).then((r) => r.text()).then((t) => { document.body.dataset.playlistLoaded = String(t.startsWith('#EXTM3U') || t.includes('<MPD')); });
+  </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="tr">
+<head><meta charset="utf-8"><title>Shadow DOM Oynatıcı</title></head>
+<body>
+  <h1>Video açık bir shadow root içinde</h1>
+  <my-player></my-player>
+  <script>
+    customElements.define('my-player', class extends HTMLElement {
+      connectedCallback() {
+        const root = this.attachShadow({ mode: 'open' });
+        root.innerHTML = '<div class="wrap"><video src="/media/sample.webm" preload="none" controls></video></div>';
+      }
+    });
+  </script>
+</body>
+</html>

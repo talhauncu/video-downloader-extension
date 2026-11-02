@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="tr">
+<head><meta charset="utf-8"><title>Yalnız Altyazı</title></head>
+<body>
+  <h1>Videosuz bir altyazı dosyası</h1>
+  <script>
+    fetch('/media/subs/lone-en.vtt').then((r) => r.text()).then(() => { document.body.dataset.loaded = 'true'; });
+  </script>
+</body>
+</html>

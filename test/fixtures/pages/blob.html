@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="tr">
+<head><meta charset="utf-8"><title>MediaSource Oynatıcı</title></head>
+<body>
+  <h1>blob: kaynaklı video</h1>
+  <video id="v" controls width="320"></video>
+  <script>
+    const ms = new MediaSource();
+    const v = document.getElementById('v');
+    v.src = URL.createObjectURL(ms);
+  </script>
+</body>
+</html>

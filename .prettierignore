@@ -1,0 +1,10 @@
+src/vendor/
+test/fixtures/media/
+node_modules/
+test-results/
+playwright-report/
+package-lock.json
+*.md
+src/globals.d.ts
+test/fixtures/pages/
+dist/

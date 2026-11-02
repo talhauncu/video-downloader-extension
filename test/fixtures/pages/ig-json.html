@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"><title>Instagram Benzeri Sayfa</title>
+  <script type="application/json" data-sjs>{"require":[["ScheduledServerJS","handle",null,[{"__bbox":{"require":[["RelayPrefetchedStreamCache","next",[],["adp_PolarisPostRootQuery",{"__bbox":{"complete":true,"result":{"data":{"xdt_api__v1__media__shortcode__web_info":{"items":[{"pk":"111","code":"ABC111","video_duration":4.0,"original_width":320,"original_height":180,"user":{"username":"testuser"},"caption":{"text":"Merhaba dünya\nikinci satır"},"video_versions":[{"type":102,"width":160,"height":90,"url":"/media/sample.webm"},{"type":101,"width":320,"height":180,"url":"/media/sample.mp4?x=1"}],"video_dash_manifest":"<MPD/>"}]}}}}}]]]}}]]]}</script>
+</head>
+<body>
+  <h1>Instagram benzeri: inline JSON + API yanıtı + DASH parçaları</h1>
+  <script>
+    const efg = (tag) => btoa(JSON.stringify({ vencode_tag: tag }));
+    const v = `/media/sample.mp4?efg=${efg('dash_vp9-basic-gen2_q80')}&_nc_ht=x`;
+    const a = `/media/sample-audio.m4a?efg=${efg('dash_ln_heaac_vbr3_audio')}&_nc_ht=x`;
+    // A third reel that only carries video_dash_manifest (no progressive URL),
+    // inserted later like a SPA navigation would. Absolute URLs, like Instagram's.
+    const mpd = `<?xml version="1.0"?><MPD xmlns="urn:mpeg:dash:schema:mpd:2011" type="static" mediaPresentationDuration="PT4S"><Period>` +
+      `<AdaptationSet contentType="video"><Representation id="v" mimeType="video/mp4" codecs="avc1.64001e" bandwidth="800000" width="640" height="360">` +
+      `<BaseURL>${location.origin}/media/dash-base/DASH_360.mp4</BaseURL><SegmentBase indexRange="900-1000"><Initialization range="0-899"/></SegmentBase></Representation></AdaptationSet>` +
+      `<AdaptationSet contentType="audio"><Representation id="a" mimeType="audio/mp4" codecs="mp4a.40.2" bandwidth="48000" audioSamplingRate="44100">` +
+      `<BaseURL>${location.origin}/media/dash-base/DASH_AUDIO_48.mp4</BaseURL><SegmentBase indexRange="700-800"><Initialization range="0-699"/></SegmentBase></Representation></AdaptationSet>` +
+      `</Period></MPD>`;
+    const late = document.createElement('script');
+    late.type = 'application/json';
+    late.textContent = JSON.stringify({ data: { items: [{ pk: '333', code: 'GHI333', video_duration: 4, original_width: 640, original_height: 360, user: { username: 'ucuncu' }, caption: { text: 'Sadece DASH manifest' }, video_dash_manifest: mpd }] } });
+
+    // Called by the test once the extractor is known to be in place (a real
+    // SPA fetches continuously; the test needs a deterministic order).
+    window.loadApi = () => fetch('/media/ig-api.json').then((r) => r.json()).then(() => { document.body.dataset.apiLoaded = 'true'; });
+
+    setTimeout(() => {
+      document.head.appendChild(late);
+      Promise.all([
+        fetch(`${v}&bytestart=0&byteend=2047`),
+        fetch(`${a}&bytestart=0&byteend=1023`),
+      ]).then(() => { document.body.dataset.chunksLoaded = 'true'; });
+    }, 300);
+  </script>
+</body>
+</html>

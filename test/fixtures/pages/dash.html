@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="tr">
+<head><meta charset="utf-8"><title>DASH Oynatıcı Sayfası</title></head>
+<body>
+  <h1>DASH</h1>
+  <script>
+    const src = new URLSearchParams(location.search).get('src');
+    if (src) fetch(src).then((r) => r.text()).then((t) => { document.body.dataset.manifestLoaded = String(t.length > 0); });
+  </script>
+</body>
+</html>

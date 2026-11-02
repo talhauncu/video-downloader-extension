@@ -1,0 +1,704 @@
+{
+  "etaSeconds": {
+    "message": "~$1 sn"
+  },
+  "etaMinutes": {
+    "message": "~$1 dk"
+  },
+  "etaHoursMinutes": {
+    "message": "~$1 sa $2 dk"
+  },
+  "etaHours": {
+    "message": "~$1 sa"
+  },
+  "percent": {
+    "message": "%$1"
+  },
+  "progressMerging": {
+    "message": "Birleştiriliyor $1"
+  },
+  "progressServerWait": {
+    "message": "Sunucu bekletiyor: $1 sn"
+  },
+  "progressPieces": {
+    "message": "$1/$2 parça"
+  },
+  "progressRemaining": {
+    "message": "kalan $1"
+  },
+  "progressWaiting": {
+    "message": "Bekliyor…"
+  },
+  "progressSaving": {
+    "message": "Kaydediliyor…"
+  },
+  "progressDownloading": {
+    "message": "İndiriliyor…"
+  },
+  "progressWithPageHeaders": {
+    "message": "Sayfanın başlıklarıyla indiriliyor"
+  },
+  "progressInterrupted": {
+    "message": "İndirme yarıda kesildi"
+  },
+  "noteLive": {
+    "message": "Canlı yayın, indirilemez"
+  },
+  "noteEncrypted": {
+    "message": "Şifreli akış ($1), indirilemez"
+  },
+  "noteDrm": {
+    "message": "DRM korumalı, indirilemez"
+  },
+  "badgeNoteSeparateAudio": {
+    "message": "Ses ayrı iner, birleştirilir"
+  },
+  "badgePostPending": {
+    "message": "Bu gönderinin video bilgisi henüz gelmedi; birkaç saniye sonra tekrar deneyin (olmazsa sayfayı yenileyin)"
+  },
+  "badgeUnmatched": {
+    "message": "Bu oynatıcının akışı henüz yakalanmadı; listeden seçin (araç çubuğu simgesi)"
+  },
+  "badgeNotListed": {
+    "message": "Video henüz listede değil; birkaç saniye sonra tekrar deneyin"
+  },
+  "badgeNoteAudio": {
+    "message": "Ses: $1"
+  },
+  "badgeNoteSubtitles": {
+    "message": "Altyazı: $1"
+  },
+  "audioTrackFallback": {
+    "message": "Ses"
+  },
+  "variantDefault": {
+    "message": "varsayılan"
+  },
+  "errMpdRoot": {
+    "message": "MPD kökü bulunamadı"
+  },
+  "errMpdNoPeriod": {
+    "message": "MPD içinde Period yok"
+  },
+  "languageUnknown": {
+    "message": "Bilinmeyen dil"
+  },
+  "errSubtitleFormat": {
+    "message": "Altyazı biçimi tanınmadı"
+  },
+  "extName": {
+    "message": "Video İndirici"
+  },
+  "extDescription": {
+    "message": "Sayfadaki indirilebilir videoları (MP4, HLS, DASH) tek tıkla indirir."
+  },
+  "commandDownloadBest": {
+    "message": "Açık sekmedeki en iyi videoyu indir"
+  },
+  "errItemNotFoundReload": {
+    "message": "Öğe bulunamadı. Sayfayı yenileyip tekrar deneyin."
+  },
+  "errItemNotFound": {
+    "message": "Öğe bulunamadı."
+  },
+  "errNotAStream": {
+    "message": "Bu öğe bir akış değil"
+  },
+  "errCannotDownloadKind": {
+    "message": "Bu tür indirilemez."
+  },
+  "errTabNotFound": {
+    "message": "Sekme bulunamadı"
+  },
+  "errFileGone": {
+    "message": "Dosya artık yerinde değil"
+  },
+  "errNoVideoInTab": {
+    "message": "Bu sekmede indirilebilir video yok"
+  },
+  "errPlayerUrlExpired": {
+    "message": "Oynatıcı adresinin süresi doldu (HTTP $1); sayfayı yenileyip tekrar deneyin"
+  },
+  "errManifest": {
+    "message": "Manifest alınamadı (HTTP $1)"
+  },
+  "errMasterEmpty": {
+    "message": "Master playlist boş"
+  },
+  "errLiveStream": {
+    "message": "Canlı yayın indirilemez"
+  },
+  "errMpdNothing": {
+    "message": "MPD içinde indirilebilir temsil yok"
+  },
+  "errDrmStream": {
+    "message": "DRM korumalı akış indirilemez"
+  },
+  "errVideoRepresentation": {
+    "message": "Video temsili çözümlenemedi"
+  },
+  "errAudioRepresentation": {
+    "message": "Ses temsili çözümlenemedi"
+  },
+  "errNoSubtitles": {
+    "message": "İndirilecek altyazı yok"
+  },
+  "errJobNotFound": {
+    "message": "İş bulunamadı."
+  },
+  "warnMergeFailed": {
+    "message": "Birleştirme başarısız, dosyalar ayrı kaydedildi: $1"
+  },
+  "warnSubtitleFailed": {
+    "message": "Altyazı indirilemedi$1: $2"
+  },
+  "subtitleJobName": {
+    "message": "$1 ($2 altyazı)"
+  },
+  "subtitleGeneric": {
+    "message": "Altyazı"
+  },
+  "fileSuffixAudio": {
+    "message": "ses"
+  },
+  "fileSuffixVideo": {
+    "message": "video"
+  },
+  "fileSuffixSubtitle": {
+    "message": "altyazi"
+  },
+  "indicatorTitle": {
+    "message": "$1 — $2 indirme sürüyor ($3): $4"
+  },
+  "errNothingToMerge": {
+    "message": "Birleştirilecek dosya yok"
+  },
+  "errFfmpegFailed": {
+    "message": "ffmpeg başarısız ($1): $2"
+  },
+  "errManifestPiecesChanged": {
+    "message": "Manifest yenilenince parça sayısı değişti"
+  },
+  "errDashNoPieces": {
+    "message": "DASH temsili içinde parça yok"
+  },
+  "stepPieceOf": {
+    "message": "Parça $1/$2"
+  },
+  "stepPieceIndex": {
+    "message": "Parça $1"
+  },
+  "stepPiece": {
+    "message": "Parça"
+  },
+  "stepKey": {
+    "message": "Anahtar"
+  },
+  "stepInit": {
+    "message": "Başlangıç parçası"
+  },
+  "errStepNetwork": {
+    "message": "$1 alınamadı (ağ hatası)"
+  },
+  "errStepHttp": {
+    "message": "$1 alınamadı (HTTP $2)"
+  },
+  "cancelled": {
+    "message": "İptal edildi"
+  },
+  "errRefreshedRepresentation": {
+    "message": "Yenilenen manifestte temsil bulunamadı"
+  },
+  "errJobRunning": {
+    "message": "Bu iş zaten çalışıyor"
+  },
+  "errNoPieces": {
+    "message": "İndirilecek parça yok"
+  },
+  "errMuxjsMissing": {
+    "message": "mux.js yüklenemedi"
+  },
+  "errRemux": {
+    "message": "Remux hatası: $1"
+  },
+  "errPlayerUrlExpiredShort": {
+    "message": "Oynatıcı adresinin süresi doldu; sayfayı yenileyip tekrar deneyin"
+  },
+  "errEncryptionUnsupported": {
+    "message": "Şifreleme desteklenmiyor: $1"
+  },
+  "errPlaylistNoPieces": {
+    "message": "Playlist içinde parça yok"
+  },
+  "errPlaylistPiecesChanged": {
+    "message": "Playlist yenilenince parça sayısı değişti ($1 → $2)"
+  },
+  "errAesKeySize": {
+    "message": "AES-128 anahtarı 16 bayt değil"
+  },
+  "errLiveSubtitles": {
+    "message": "Canlı altyazı akışı indirilemez"
+  },
+  "errNoSubtitlePieces": {
+    "message": "Altyazı parçası yok"
+  },
+  "errSubtitleEmpty": {
+    "message": "Altyazıda satır yok"
+  },
+  "badgeDownload": {
+    "message": "İndir"
+  },
+  "badgeChooseQuality": {
+    "message": "Kalite seçin"
+  },
+  "badgeChooseQualityNote": {
+    "message": "Kalite seçin · $1"
+  },
+  "badgeCancel": {
+    "message": "× İptal"
+  },
+  "badgeStarting": {
+    "message": "Başlıyor…"
+  },
+  "badgeClickToCancel": {
+    "message": "İptal etmek için tıklayın"
+  },
+  "badgeConfirmCancel": {
+    "message": "İptal edilsin mi?"
+  },
+  "badgeClickAgainToConfirm": {
+    "message": "Onaylamak için tekrar tıklayın"
+  },
+  "badgeCancelling": {
+    "message": "İptal ediliyor…"
+  },
+  "badgeCancelFailed": {
+    "message": "İptal edilemedi"
+  },
+  "badgeFileNotFound": {
+    "message": "Dosya bulunamadı"
+  },
+  "badgeCannotDownload": {
+    "message": "Bu video indirilemiyor"
+  },
+  "badgeStartFailed": {
+    "message": "İndirme başlatılamadı"
+  },
+  "badgeStatusUnavailable": {
+    "message": "İndirme durumu alınamadı"
+  },
+  "badgeDoneFile": {
+    "message": "$1 · klasörde göstermek için tıklayın"
+  },
+  "jobStateDone": {
+    "message": "Tamamlandı"
+  },
+  "badgeDownloaded": {
+    "message": "İndirildi"
+  },
+  "jobStateError": {
+    "message": "Hata"
+  },
+  "badgeRetry": {
+    "message": "Tekrar dene"
+  },
+  "badgeShowInFolder": {
+    "message": "Klasörde göster"
+  },
+  "badgeErrorRetry": {
+    "message": "$1 · tekrar denemek için tıklayın"
+  },
+  "badgeOk": {
+    "message": "Tamam"
+  },
+  "badgeHint": {
+    "message": "İndirme arka planda sürer: sayfayı yenileseniz ya da kapatsanız da devam eder. Durumu araç çubuğundaki simgeden (yeşil yüzde) izleyebilirsiniz."
+  },
+  "popupDownloads": {
+    "message": "İndirmeler"
+  },
+  "popupViewRecommended": {
+    "message": "Önerilen"
+  },
+  "popupViewAll": {
+    "message": "Tümü"
+  },
+  "popupRecommendedEmpty": {
+    "message": "Bu sayfada öne çıkan video yok; \"Diğer\" bölümüne bakın."
+  },
+  "popupOthers": {
+    "message": "Diğer"
+  },
+  "popupEmpty": {
+    "message": "Bu sekmede video bulunamadı."
+  },
+  "popupRecent": {
+    "message": "Son indirilenler"
+  },
+  "popupHistoryClear": {
+    "message": "temizle"
+  },
+  "popupHistoryEmpty": {
+    "message": "Henüz indirme yok."
+  },
+  "popupClearList": {
+    "message": "Listeyi temizle"
+  },
+  "popupHistory": {
+    "message": "Geçmiş"
+  },
+  "popupDebug": {
+    "message": "Hata ayıklama bilgisi"
+  },
+  "popupDebugTitle": {
+    "message": "Hata bildirimi için teknik bilgiyi panoya kopyalar"
+  },
+  "popupOptions": {
+    "message": "Ayarlar"
+  },
+  "popupShowInFolder": {
+    "message": "Klasörde göster"
+  },
+  "popupMainVideo": {
+    "message": "Ana video"
+  },
+  "popupAudioLanguage": {
+    "message": "Ses dili"
+  },
+  "popupCancel": {
+    "message": "İptal"
+  },
+  "kindVideo": {
+    "message": "Video"
+  },
+  "kindAudio": {
+    "message": "Ses"
+  },
+  "kindSegment": {
+    "message": "Parça"
+  },
+  "kindBlob": {
+    "message": "Akış"
+  },
+  "kindSubtitle": {
+    "message": "Altyazı"
+  },
+  "jobStateDownloading": {
+    "message": "İndiriliyor"
+  },
+  "jobStateSaving": {
+    "message": "Kaydediliyor"
+  },
+  "jobStateMerging": {
+    "message": "Birleştiriliyor"
+  },
+  "jobStateWaiting": {
+    "message": "Bekliyor"
+  },
+  "errUnknown": {
+    "message": "Bilinmeyen hata"
+  },
+  "metaPieces": {
+    "message": "$1 parça"
+  },
+  "popupSubtitles": {
+    "message": "Altyazı:"
+  },
+  "popupForced": {
+    "message": " · zorunlu"
+  },
+  "popupDescribing": {
+    "message": "İnceleniyor…"
+  },
+  "errManifestUnreadable": {
+    "message": "Manifest okunamadı: $1"
+  },
+  "noteSubtitleStream": {
+    "message": "Altyazı akışı"
+  },
+  "noteSeparateAudio": {
+    "message": "Ses ayrı dosya olarak iner"
+  },
+  "noteAesEncrypted": {
+    "message": "AES-128 şifreli, çözülerek indirilir"
+  },
+  "noteAudioOnly": {
+    "message": "Yalnızca ses"
+  },
+  "noteMp4Subtitles": {
+    "message": "$1 altyazı MP4 içinde (desteklenmiyor)"
+  },
+  "siteNoteReload": {
+    "message": "Instagram: eklenti bu sekme açıldıktan sonra yüklendi. Tam dosyalar için sayfayı yenileyin (⌘R), sonra popup'ı tekrar açın."
+  },
+  "siteNoteNoEntries": {
+    "message": "Instagram: bu sayfada tam dosya bilgisi bulunamadı, yalnızca ham parçalar listeleniyor. Reel'i açıp sayfayı yenilemeyi deneyin."
+  },
+  "popupPlayerStream": {
+    "message": "Oynatıcı akışı"
+  },
+  "noteBlob": {
+    "message": "Parçalı akış; ağdan yakalanan HLS/DASH girdisine bakın"
+  },
+  "noteQuickTime": {
+    "message": "$1: QuickTime açmaz, VLC ile oynatın"
+  },
+  "noteLikelyAd": {
+    "message": "Muhtemel reklam"
+  },
+  "popupNotDownloadable": {
+    "message": "İndirilemez"
+  },
+  "jobOtherTab": {
+    "message": "Başka sekme"
+  },
+  "jobOtherTabSite": {
+    "message": "Başka sekme · $1"
+  },
+  "jobFfmpeg": {
+    "message": "ffmpeg $1"
+  },
+  "jobRateLimit": {
+    "message": "Sunucu hız sınırı (HTTP $1): $2 sn bekleniyor"
+  },
+  "jobRateLimitOf": {
+    "message": "Sunucu hız sınırı (HTTP $1): $2 sn bekleniyor ($3/$4)"
+  },
+  "jobTranscoded": {
+    "message": "H.264'e dönüştürüldü"
+  },
+  "jobFileOf": {
+    "message": "$1/$2. dosya"
+  },
+  "jobAudio": {
+    "message": "ses: $1"
+  },
+  "jobSubtitles": {
+    "message": "altyazı: $1"
+  },
+  "jobEmbedded": {
+    "message": "Altyazı gömüldü: $1"
+  },
+  "jobRetries": {
+    "message": "$1 yeniden deneme"
+  },
+  "jobSpacing": {
+    "message": "aralık $1 ms"
+  },
+  "jobRefreshes": {
+    "message": "$1 playlist yenileme"
+  },
+  "jobMirrorSwitches": {
+    "message": "$1 ayna değişimi"
+  },
+  "popupStarting": {
+    "message": "Başlatılıyor…"
+  },
+  "popupPlusSubtitles": {
+    "message": " (+$1 altyazı)"
+  },
+  "popupSubtitleDownloading": {
+    "message": "Altyazı indiriliyor"
+  },
+  "popupStreamDownloading": {
+    "message": "Akış indiriliyor"
+  },
+  "popupStatusFiles": {
+    "message": "$1 ($2 dosya): $3"
+  },
+  "popupStatusFile": {
+    "message": "$1: $2"
+  },
+  "popupStarted": {
+    "message": "Başladı"
+  },
+  "popupDownloadStarted": {
+    "message": "İndirme başladı: $1"
+  },
+  "popupSubtitleStartFailed": {
+    "message": "Altyazı başlatılamadı: $1"
+  },
+  "popupDebugCopied": {
+    "message": "Hata ayıklama bilgisi panoya kopyalandı."
+  },
+  "popupDebugSelect": {
+    "message": "Panoya erişilemedi; metin aşağıda seçili, kopyalayın."
+  },
+  "errNoActiveTab": {
+    "message": "Aktif sekme bulunamadı."
+  },
+  "optTitle": {
+    "message": "Video İndirici – Ayarlar"
+  },
+  "optHeading": {
+    "message": "Video İndirici ayarları"
+  },
+  "optGeneral": {
+    "message": "Genel"
+  },
+  "optUiLanguage": {
+    "message": "Arayüz dili"
+  },
+  "optUiLanguageAuto": {
+    "message": "Chrome'un dili"
+  },
+  "optUiLanguageHint": {
+    "message": "İngilizce ve Türkçe var; \"Chrome'un dili\" seçiliyken başka bir dilde İngilizce görünür."
+  },
+  "optMergeSection": {
+    "message": "Birleştirme ve dönüştürme (ffmpeg.wasm)"
+  },
+  "optMergeTracks": {
+    "message": "Ayrı inen görüntü ve sesi tek MP4'te birleştir"
+  },
+  "optMergeTracksHint": {
+    "message": "Reddit ve bazı HLS yayınları görüntü ile sesi ayrı verir. Kapalıyken iki dosya iner (<code>-video.mp4</code>, <code>-ses.m4a</code>)."
+  },
+  "optPreferH264": {
+    "message": "H.264 kaliteyi öne al (DASH ve HLS)"
+  },
+  "optPreferH264Hint": {
+    "message": "Instagram gibi siteler aynı videoyu hem VP9 hem H.264 olarak sunar, bazı film oynatıcıları en yüksek kaliteyi AV1 verir; H.264 QuickTime'da dönüşümsüz açılır. Kalite menüsünde AV1/HEVC/VP9 olanlar adıyla gösterilir."
+  },
+  "optTranscode": {
+    "message": "H.264 olmayan görüntüyü (VP9, AV1) H.264'e dönüştür"
+  },
+  "optTranscodeHint": {
+    "message": "QuickTime VP9/AV1 oynatmaz; dönüştürme tarayıcıda yapılır ve uzun videolarda dakikalar sürebilir. Yalnızca akış (HLS/DASH) indirmelerinde uygulanır."
+  },
+  "optDownloadSection": {
+    "message": "İndirme"
+  },
+  "optConcurrency": {
+    "message": "Aynı anda indirilen parça sayısı"
+  },
+  "optConcurrencyHint": {
+    "message": "1–8. Yavaş sunucularda düşürün, hızlı CDN'lerde yükseltin."
+  },
+  "optStripJunk": {
+    "message": "Parça başındaki çöp baytları temizle"
+  },
+  "optStripJunkHint": {
+    "message": "Bazı sunucular segmentlerin başına video olmayan baytlar ekler; açıkken ilk geçerli TS/MP4 verisine kadar olan kısım atılır."
+  },
+  "optCooldown": {
+    "message": "Hız sınırında en fazla bekleme (dakika)"
+  },
+  "optCooldownHint": {
+    "message": "Sunucu \"çok fazla istek\" (429) dediğinde iş önce istekleri seyreltir, sonra bu bütçe dolana kadar bekleyip devam eder. 0: uzun bekleme yok, iş hemen hata verir."
+  },
+  "optAudioSection": {
+    "message": "Ses"
+  },
+  "optAudioLang": {
+    "message": "Ses dili"
+  },
+  "optAudioDefault": {
+    "message": "Sitenin varsayılanı"
+  },
+  "optAudioOriginal": {
+    "message": "Orijinal (dublaj değil)"
+  },
+  "optAudioTurkish": {
+    "message": "Türkçe (dublaj)"
+  },
+  "optAudioEnglish": {
+    "message": "İngilizce"
+  },
+  "optAudioHint": {
+    "message": "Akışta birden fazla ses dili olduğunda (örneğin dublaj ve orijinal ses) video üstü düğme ve kısayol bunu alır; açılır pencerede ses menüsü bu seçimle açılır. Orijinal: adı \"Orijinal\" olan ses, yoksa Türkçe olmayan ilk ses. Sitenin düğmeleri ayrı bir oynatıcı açıyorsa (ses izi tek), sitede önce o seçeneğe basın."
+  },
+  "optSubtitlesSection": {
+    "message": "Altyazılar"
+  },
+  "optSubtitleLangs": {
+    "message": "Otomatik alınacak diller"
+  },
+  "optSubtitleLangsHint": {
+    "message": "Dil kodları, virgülle (<code>tr, en</code>); sıra önceliktir. <code>*</code> tüm diller, boş bırakmak hiçbiri. Video üstü düğme ve kısayol bu dilleri alır; açılır pencerede bu diller önceden işaretlenir."
+  },
+  "optSubtitleFormat": {
+    "message": "Biçim"
+  },
+  "optEmbedSubtitles": {
+    "message": "Altyazıyı MP4'ün içine göm"
+  },
+  "optEmbedSubtitlesHint": {
+    "message": "Yalnızca akış (HLS/DASH) indirmelerinde; altyazı ayrı dosya olarak inmez, QuickTime ve VLC'de altyazı menüsünden seçilir. Düz MP4 indirmelerinde altyazı her zaman ayrı dosyadır."
+  },
+  "optListSection": {
+    "message": "Liste"
+  },
+  "optHideAds": {
+    "message": "Reklam videolarını \"Diğer\" altına katla"
+  },
+  "optHideAdsHint": {
+    "message": "Banner boyutlu (728×90, 300×250 …), çok kısa ve küçük ya da reklam sunucusundan gelen videolar önerilen listeden çıkarılır; \"Diğer\" bölümünde ve \"Tümü\" görünümünde durmaya devam eder."
+  },
+  "optBadgeSection": {
+    "message": "Video üstü indirme düğmesi"
+  },
+  "optBadgeMode": {
+    "message": "Göster"
+  },
+  "optBadgeHover": {
+    "message": "Fare videonun üzerindeyken"
+  },
+  "optBadgeAlways": {
+    "message": "Her zaman"
+  },
+  "optBadgeOff": {
+    "message": "Kapalı"
+  },
+  "optBadgeHint": {
+    "message": "Videonun sol üst köşesinde küçük bir \"İndir\" düğmesi; reklam videolarında görünmez."
+  },
+  "optBadgeHosts": {
+    "message": "Düğmenin gizleneceği siteler"
+  },
+  "optBadgeHostsHint": {
+    "message": "Her satıra bir alan adı; alt alan adları da kapsanır (instagram.com → www.instagram.com)."
+  },
+  "optFilenameSection": {
+    "message": "Dosya adı"
+  },
+  "optTemplate": {
+    "message": "Şablon"
+  },
+  "optTemplateHint": {
+    "message": "Kullanılabilir alanlar: <code>{site}</code> <code>{title}</code> <code>{date}</code> <code>{time}</code> <code>{quality}</code> <code>{id}</code>. Boş alanlar ve ayırıcıları atlanır."
+  },
+  "optPreview": {
+    "message": "Örnek:"
+  },
+  "optResetTemplate": {
+    "message": "Varsayılana dön"
+  },
+  "optHistorySection": {
+    "message": "Geçmiş"
+  },
+  "optHistoryLimit": {
+    "message": "Saklanacak indirme sayısı"
+  },
+  "optClearHistory": {
+    "message": "Geçmişi temizle"
+  },
+  "optShortcutSection": {
+    "message": "Klavye kısayolu"
+  },
+  "optShortcutHint": {
+    "message": "Varsayılan <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd>: açık sekmedeki en iyi videoyu indirir. Değiştirmek için <code>chrome://extensions/shortcuts</code>."
+  },
+  "optPreviewTitle": {
+    "message": "Örnek video başlığı"
+  },
+  "optSaved": {
+    "message": "Kaydedildi"
+  },
+  "optSaveFailed": {
+    "message": "Kaydedilemedi: $1"
+  },
+  "optHistoryCleared": {
+    "message": "Geçmiş temizlendi"
+  }
+}

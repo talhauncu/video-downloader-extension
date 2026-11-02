@@ -1,0 +1,1 @@
+{"status":"ok","items":[{"pk":"222","id":"222_1","code":"DEF222","video_duration":4.0,"original_width":320,"original_height":180,"user":{"username":"ikinci"},"caption":{"text":"API ile gelen ikinci reel"},"video_versions":[{"type":101,"width":320,"height":180,"url":"/media/sample.webm"}],"video_dash_manifest":"<MPD/>"}]}
