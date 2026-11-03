@@ -139,6 +139,37 @@ and the keyboard shortcut all use it.
   (`stripJunk`). Errors name their step ("Piece 3/841 could not be fetched (HTTP 404)").
 - **Live streams** (no `ENDLIST`), SAMPLE-AES and DRM are refused.
 
+### Queue, notifications, resume
+
+- **Queue** (`jobs.js`): at most `maxJobs` stream jobs (HLS/DASH, not
+  subtitle-only jobs) are `downloading` at once. A job over the limit is saved
+  as `queued`, its offscreen payload under `jobrun:<id>` (session storage), and
+  gets no header rule until it starts. `pumpQueue()` starts the oldest queued
+  jobs when a slot frees (a job reaches `saving`, fails or is cancelled), when
+  `maxJobs` grows and when the service worker starts. Counting and claiming
+  run under one lock (`exclusive`), so two starts never take the same slot.
+- **Notifications**: a job that ends `done` or `error` (not cancelled, not a
+  video's side job for its subtitles) raises a `chrome.notifications` card;
+  clicking a "done" card shows the file (`chrome.downloads.show`). Setting
+  `notify`.
+- **Folder**: `subfolder` is a template (`{site}` `{date}`) cleaned to a
+  relative path (`filename.js`: no `..`, no empty parts); file names are
+  passed to `chrome.downloads` as `<folder>/<name>`.
+- **Resume in the session**: the segment pool (`segment-pool.js`) stops at
+  the first failure only after the write under way, so an fMP4/DASH track's
+  output is a clean prefix of `written` pieces. On a failure the downloader
+  commits that prefix (`close()` instead of `abort()`), and `StreamJob` keeps
+  its finished tracks and the failed one in the offscreen document's `stalled`
+  map (dropped after an hour, on `release`, or with "Clear list"). The job is
+  marked `resumable`; downloading the same entry with the same tracks again
+  (`resumeKeyOf`: entry key + role/representation/URL path of each track)
+  reuses the job: `stream-resume` re-reads the playlist (or takes the fresh
+  DASH plan), reopens the file with `keepExistingData` and continues from
+  piece `written`; finished tracks are not fetched again. A TS track starts
+  over (the remuxer's state is gone), as does a track whose piece count
+  changed. When the offscreen document no longer has the job, it starts from
+  the beginning.
+
 ## ffmpeg.wasm
 
 `src/vendor/ffmpeg/`: `@ffmpeg/ffmpeg` 0.12.15 and the single-threaded

@@ -53,6 +53,11 @@ folder.
   downloads the post it sits in.
 - **Toolbar indicator**: while downloads run, the icon shows the overall
   progress on every tab; downloads go on when their page is reloaded or closed.
+- **Queue and notifications**: at most two stream downloads (HLS/DASH) run at
+  once (setting: 1–4); the others wait as **Queued** and start in turn. When
+  one ends, a system notification says so (click it to show the file). A
+  stream that fails keeps what it downloaded until the browser closes:
+  downloading it again continues from there.
 - **Subtitles**: HLS and DASH subtitle tracks, `<track>`s and subtitle files
   on the page show up as chips; the preferred languages are ticked in advance
   and download next to the video as `<name>-<lang>.srt` (or `.vtt`), or are
@@ -70,7 +75,9 @@ Interface language (Chrome's, English, Türkçe) · merging and H.264 conversion
 rate-limit waiting budget · audio language (site default, original, Turkish,
 English) · subtitle languages, format and embedding · folding ads · the
 in-page button (on hover, always, off; hidden sites) · file name template
-(`{site}` `{title}` `{date}` `{time}` `{quality}` `{id}`) · history size.
+(`{site}` `{title}` `{date}` `{time}` `{quality}` `{id}`) · a folder inside
+Downloads (`{site}` `{date}`, e.g. `VideoDownloader/{site}`) · downloads at
+once · notifications · history size.
 
 ## Permissions
 
@@ -80,6 +87,7 @@ in-page button (on hover, always, off; hidden sites) · file name template
 | `declarativeNetRequest` | Send the player's Referer/Origin with the extension's own requests; many media servers require it. Rules are temporary. |
 | `offscreen` | Run long stream downloads, decryption, remuxing and ffmpeg.wasm outside the service worker. |
 | `downloads` | Save files and show them in their folder. |
+| `notifications` | Say when a stream download is done or has failed (can be turned off in the settings). |
 | `storage` | Settings, the per-tab list, job state and history. |
 | `tabs`, `activeTab` | Know which tab a request belongs to and read its title for file names. |
 | `scripting` | Run the site extractors on their sites (Instagram on instagram.com, X on x.com and twitter.com, Facebook on facebook.com, Vimeo on vimeo.com and in its embedded players). |
@@ -139,7 +147,8 @@ on staged files. There is no build step: the files are loaded as they are.
 | 5a | X (Twitter): one complete MP4 per video and GIF, the post's text as the title | ✅ |
 | 5b | Facebook: Reels, Watch and videos in posts as one complete MP4 (or merged DASH) each | ✅ |
 | 5c | Vimeo: on vimeo.com and in players embedded in other sites, the largest MP4 or the HLS master | ✅ |
-| 6 | Job queue and resume, performance, Firefox | |
+| 6a | Download queue (N at once), notifications, a folder inside Downloads, continuing a failed stream | ✅ |
+| 6b, 6c | Performance, Firefox | |
 
 ## License
 

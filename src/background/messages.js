@@ -41,7 +41,7 @@ const handlers = {
     // finish is seen), not their whole history (that is the Geçmiş panel).
     const recent = Date.now() - 15_000;
     const others = (await jobs.listJobs(null))
-      .filter((j) => j.tabId !== tabId && (j.status === 'downloading' || j.status === 'saving' || (j.updatedAt ?? 0) > recent))
+      .filter((j) => j.tabId !== tabId && (['queued', 'downloading', 'saving'].includes(j.status) || (j.updatedAt ?? 0) > recent))
       .map((j) => ({
         ...j,
         otherTab: true,
@@ -139,7 +139,8 @@ const handlers = {
     if (tabId == null || tabId < 0) throw new Error(t('errTabNotFound'));
     const running = (await jobs.listJobs(tabId)).filter(
       (j) =>
-        (j.itemId === itemId || (itemKey && j.itemKey === itemKey) || (itemPath && j.itemPath === itemPath)) && j.status === 'downloading',
+        (j.itemId === itemId || (itemKey && j.itemKey === itemKey) || (itemPath && j.itemPath === itemPath)) &&
+        (j.status === 'downloading' || j.status === 'queued'),
     );
     if (running.length) {
       for (const j of running) await jobs.cancelJob({ jobId: j.jobId });

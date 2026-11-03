@@ -46,6 +46,7 @@ const KIND_LABEL = {
 };
 const kindLabel = (kind) => (KIND_LABEL[kind] ? t(KIND_LABEL[kind]) : kind.toUpperCase());
 const JOB_STATE = {
+  queued: 'jobStateQueued',
   downloading: 'jobStateDownloading',
   saving: 'jobStateSaving',
   done: 'jobStateDone',
@@ -134,8 +135,10 @@ function displayName(item) {
 
 // ---- rendering: items ----------------------------------------------------
 
+const ACTIVE_STATES = ['queued', 'downloading', 'saving'];
+
 function activeJobFor(itemId) {
-  return jobs.find((j) => j.itemId === itemId && (j.status === 'downloading' || j.status === 'saving'));
+  return jobs.find((j) => j.itemId === itemId && ACTIVE_STATES.includes(j.status));
 }
 
 const subKey = (c) => `${c.source}|${c.ref}`;
@@ -473,11 +476,14 @@ function renderJobs() {
       );
     }
     if (job.bytes) detail.push(formatBytes(job.bytes));
+    if (job.status === 'queued') detail.push(t('progressQueuedDetail'));
+    if (job.status === 'downloading' && job.resumedFrom) detail.push(t('progressResumed', job.resumedFrom));
     if (job.status === 'error' && job.error) detail.push(job.error);
+    if (job.status === 'error' && job.resumable) detail.push(t('jobResumable'));
     node.querySelector('.job-detail').textContent = detail.join(' · ');
 
     const cancel = /** @type {HTMLButtonElement} */ (node.querySelector('.cancel'));
-    cancel.hidden = job.status !== 'downloading';
+    cancel.hidden = job.status !== 'downloading' && job.status !== 'queued';
     cancel.addEventListener('click', async () => {
       cancel.disabled = true;
       try {
@@ -602,7 +608,7 @@ async function refresh() {
 let itemsShown = null;
 let itemsPending = false;
 function itemsSignature() {
-  const active = jobs.filter((j) => j.status === 'downloading' || j.status === 'saving').map((j) => [j.itemId, j.status]);
+  const active = jobs.filter((j) => ACTIVE_STATES.includes(j.status)).map((j) => [j.itemId, j.status]);
   return JSON.stringify([items.map(({ requests, lastSeen, ...rest }) => rest), active, siteState]);
 }
 function menuOpen() {

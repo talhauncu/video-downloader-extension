@@ -5,7 +5,7 @@
 import * as store from './store.js';
 import { runOffscreenJob } from './offscreen.js';
 import { addJobRule, removeRule } from './header-rules.js';
-import { buildFilename } from '../lib/filename.js';
+import { buildFilename, buildFolder } from '../lib/filename.js';
 import { downloadBlob, onTrackedDownloadEnd } from './downloads.js';
 import { KIND, groupKey } from '../lib/media-url.js';
 import { isMasterPlaylist, parseMasterPlaylist, parseMediaPlaylist, sortVariants, variantLabel } from '../lib/m3u8.js';
@@ -76,6 +76,8 @@ export async function getJob(jobId) {
     itemId,
     downloadIds,
     waitedMs,
+    resumedFrom,
+    resumable,
   } = s;
   return {
     jobId,
@@ -93,6 +95,8 @@ export async function getJob(jobId) {
     startedAt,
     downloadIds: downloadIds ?? [],
     waitedMs: waitedMs ?? 0,
+    resumedFrom: resumedFrom ?? null,
+    resumable: Boolean(resumable),
   };
 }
 
@@ -446,7 +450,17 @@ export async function startStreamJob({ tabId, id, variantUrl, audioUrl, videoRep
     template: settings.filenameTemplate,
     quality,
   });
-  return launch({ tabId, item, itemId: id, tracks, pageUrl, filename, stem: filename.replace(/\.mp4$/, ''), settings });
+  return launch({
+    tabId,
+    item,
+    itemId: id,
+    tracks,
+    pageUrl,
+    siteUrl: tab?.url ?? pageUrl,
+    filename,
+    stem: filename.replace(/\.mp4$/, ''),
+    settings,
+  });
 }
 
 /**
@@ -470,71 +484,255 @@ export async function startSubtitleJob({ tabId, item, choices, filename = null, 
     tracks.length === 1
       ? `${stem}-${languageSuffix(tracks[0].lang)}.${settings.subtitleFormat}`
       : t('subtitleJobName', stem, tracks.length);
-  return launch({ tabId, item, itemId: own ? item.id : null, tracks, pageUrl, filename: display, stem, settings, kind: 'subtitle' });
+  return launch({
+    tabId,
+    item,
+    itemId: own ? item.id : null,
+    tracks,
+    pageUrl,
+    siteUrl: tab?.url ?? pageUrl,
+    filename: display,
+    stem,
+    settings,
+    kind: 'subtitle',
+  });
 }
 
-async function launch({ tabId, item, itemId, tracks, pageUrl, filename, stem, settings, kind = item.kind }) {
+/**
+ * What makes a retry the same download: the entry and the tracks chosen
+ * (by role, representation or URL path; signed query values change).
+ */
+export function resumeKeyOf(item, tracks) {
+  const entry = item.key ?? pathOf(item.url) ?? item.id;
+  const parts = tracks.map((t) => [t.role, t.type ?? '', t.repId ?? pathOf(t.url ?? t.mpdUrl ?? '') ?? ''].join(':'));
+  return [entry, ...parts].join('|');
+}
+
+/** Stream jobs take a queue slot; subtitle jobs are small and never wait. */
+const takesSlot = (job) => job.kind !== 'subtitle';
+const RUN_PREFIX = 'jobrun:'; // a queued job's offscreen payload, kept apart from the state the popup reads
+
+async function launch({ tabId, item, itemId, tracks, pageUrl, siteUrl = pageUrl, filename, stem, settings, kind = item.kind }) {
   const contextUrl = contextUrlOf(item, pageUrl);
-  const jobId = crypto.randomUUID();
-  const state = {
-    jobId,
-    kind,
-    tabId,
-    itemId,
-    itemKey: itemId ? (item.key ?? null) : null, // survives page reloads (the item id does not)
-    itemPath: itemId ? pathOf(item.url) : null, // survives mirror-host and token changes between page loads
-    url: item.url,
-    pageUrl,
-    contextUrl,
-    filename,
-    stem,
-    tracks: tracks.length,
-    subtitles: tracks.filter((t) => t.role === 'subtitle').map((t) => t.lang ?? t.label ?? '?'),
-    audio: tracks.find((t) => t.role === 'audio' && t.audioLabel)?.audioLabel ?? null, // shown when there was a choice
-    files: [],
-    status: 'downloading',
-    done: 0,
-    total: 0,
-    bytes: 0,
-    ruleId: await addJobRule(contextUrl),
-    startedAt: Date.now(),
-    updatedAt: Date.now(),
+  const resumeKey = kind === 'subtitle' ? null : resumeKeyOf(item, tracks);
+  const payload = {
+    tracks,
+    postProcess: { merge: settings.mergeTracks, transcode: settings.transcodeToH264, embedSubtitles: settings.embedSubtitles },
+    concurrency: settings.concurrency,
+    stripJunk: settings.stripJunk,
+    subtitleFormat: settings.subtitleFormat,
+    cooldownSchedule: scheduleForBudget(settings.maxCooldownMinutes),
+    // Test hook: e2e shortens the late-retry delays (never set by the UI).
+    fallbackDelays: globalThis.__vdlFallbackDelays ?? undefined,
   };
-  await save(state);
-  const postProcess = { merge: settings.mergeTracks, transcode: settings.transcodeToH264, embedSubtitles: settings.embedSubtitles };
+  const state = await exclusive(async () => {
+    // "Retry" after a failure in this session: the offscreen document still
+    // holds what was downloaded, the job continues from there.
+    const failed = resumeKey
+      ? (await listJobs(null))
+          .filter((j) => j.status === 'error' && j.resumable && j.resumeKey === resumeKey)
+          .sort((a, b) => b.updatedAt - a.updatedAt)[0]
+      : null;
+    const slot = !takesSlot({ kind }) || (await runningCount()) < settings.maxJobs;
+    const now = Date.now();
+    const next = failed
+      ? {
+          ...failed,
+          tabId,
+          itemId,
+          status: slot ? 'downloading' : 'queued',
+          error: null,
+          lastHttp: null,
+          phase: null,
+          resumable: false,
+          resume: true,
+          notified: null,
+          warning: null,
+          files: [],
+          downloadIds: [],
+          queuedAt: now,
+          updatedAt: now,
+        }
+      : {
+          jobId: crypto.randomUUID(),
+          kind,
+          tabId,
+          itemId,
+          itemKey: itemId ? (item.key ?? null) : null, // survives page reloads (the item id does not)
+          itemPath: itemId ? pathOf(item.url) : null, // survives mirror-host and token changes between page loads
+          resumeKey,
+          url: item.url,
+          pageUrl,
+          contextUrl,
+          filename,
+          stem,
+          folder: buildFolder(settings.subfolder, { pageUrl: siteUrl }),
+          tracks: tracks.length,
+          subtitles: tracks.filter((t) => t.role === 'subtitle').map((t) => t.lang ?? t.label ?? '?'),
+          audio: tracks.find((t) => t.role === 'audio' && t.audioLabel)?.audioLabel ?? null, // shown when there was a choice
+          files: [],
+          status: slot ? 'downloading' : 'queued',
+          done: 0,
+          total: 0,
+          bytes: 0,
+          ruleId: null,
+          queuedAt: now,
+          startedAt: now,
+          updatedAt: now,
+        };
+    await save(next);
+    if (!slot) await chrome.storage.session.set({ [RUN_PREFIX + next.jobId]: payload });
+    return next;
+  });
+  if (state.status === 'downloading') await begin(state, payload);
+  return {
+    jobId: state.jobId,
+    filename: state.filename,
+    kind: state.kind,
+    tracks: tracks.length,
+    subtitles: state.subtitles.length,
+    queued: state.status === 'queued',
+    resumed: Boolean(state.resume),
+  };
+}
+
+// Queue decisions (count, then claim) must not interleave.
+/** @type {Promise<unknown>} */
+let scheduling = Promise.resolve();
+/**
+ * @template T
+ * @param {() => Promise<T>} fn
+ * @returns {Promise<T>}
+ */
+function exclusive(fn) {
+  const next = scheduling.then(fn, fn);
+  scheduling = next.catch(() => undefined);
+  return next;
+}
+
+async function runningCount() {
+  return (await listJobs(null)).filter((j) => j.status === 'downloading' && takesSlot(j)).length;
+}
+
+/** Starts a job that holds a slot: its header rule, then the offscreen work (a resume when it can). */
+async function begin(state, payload) {
+  const { jobId } = state;
   try {
-    await runOffscreenJob('stream-download', {
-      jobId,
-      tracks,
-      postProcess,
-      concurrency: settings.concurrency,
-      stripJunk: settings.stripJunk,
-      subtitleFormat: settings.subtitleFormat,
-      cooldownSchedule: scheduleForBudget(settings.maxCooldownMinutes),
-      // Test hook: e2e shortens the late-retry delays (never set by the UI).
-      fallbackDelays: globalThis.__vdlFallbackDelays ?? undefined,
-    });
+    const ruleId = await addJobRule(state.contextUrl);
+    await patch(jobId, { ruleId, startedAt: Date.now() });
+    if (state.resume) {
+      const resumed = await runOffscreenJob('stream-resume', { jobId, ...payload });
+      if (resumed.resumed) {
+        await patch(jobId, { done: resumed.done, total: resumed.total, resumedFrom: resumed.done });
+        return;
+      }
+      // The offscreen document lost what it had (closed, or too long ago): from the start.
+      await patch(jobId, { done: 0, total: 0, bytes: 0, resumedFrom: null, resume: false });
+    }
+    await runOffscreenJob('stream-download', { jobId, ...payload });
   } catch (error) {
-    await removeRule(state.ruleId);
+    const s = await load(jobId);
+    await removeRule(s?.ruleId);
     await patch(jobId, { status: 'error', error: error.message });
+    await ended(jobId);
     throw error;
   }
-  return { jobId, filename, kind, tracks: tracks.length, subtitles: state.subtitles.length };
 }
+
+/** Starts queued jobs while slots are free (oldest first). */
+export function pumpQueue() {
+  return exclusive(async () => {
+    const { maxJobs } = await getSettings();
+    const all = await listJobs(null);
+    const free = maxJobs - all.filter((j) => j.status === 'downloading' && takesSlot(j)).length;
+    const queued = all.filter((j) => j.status === 'queued').sort((a, b) => a.queuedAt - b.queuedAt);
+    const starting = [];
+    for (const job of queued.slice(0, Math.max(0, free))) {
+      const key = RUN_PREFIX + job.jobId;
+      const payload = (await chrome.storage.session.get(key))[key];
+      await chrome.storage.session.remove(key);
+      if (!payload) {
+        await patch(job.jobId, { status: 'error', error: t('errJobNotFound') });
+        continue;
+      }
+      starting.push([await patch(job.jobId, { status: 'downloading' }), payload]);
+    }
+    return starting;
+  }).then((starting) =>
+    Promise.all(starting.map(([state, payload]) => begin(state, payload).catch((e) => console.warn('[video-downloader] queued job', e)))),
+  );
+}
+
+// More slots in the settings: start waiting jobs now.
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'sync' && changes.maxJobs) pumpQueue().catch(() => {});
+});
 
 export async function cancelJob({ jobId }) {
   const state = await load(jobId);
   if (!state) throw new Error(t('errJobNotFound'));
+  if (state.status === 'queued') {
+    await chrome.storage.session.remove(RUN_PREFIX + jobId);
+    const cancelled = await patch(jobId, (s) => (s.status === 'queued' ? { status: 'cancelled', error: t('cancelled') } : {}));
+    if (cancelled?.status === 'cancelled') return { cancelled: true };
+    return cancelJob({ jobId }); // started meanwhile
+  }
   if (state.status !== 'downloading') return { cancelled: false, status: state.status };
   await runOffscreenJob('cancel', { jobId });
   return { cancelled: true };
 }
 
 export async function clearFinishedJobs(tabId) {
-  const jobs = await listJobs(tabId);
-  const keys = jobs.filter((j) => j.status !== 'downloading' && j.status !== 'saving').map((j) => PREFIX + j.jobId);
-  if (keys.length) await chrome.storage.session.remove(keys);
+  const jobs = (await listJobs(tabId)).filter((j) => !['downloading', 'saving', 'queued'].includes(j.status));
+  if (!jobs.length) return;
+  await chrome.storage.session.remove(jobs.map((j) => PREFIX + j.jobId));
+  // What a failed job kept for a retry goes with it.
+  for (const j of jobs.filter((j) => j.resumable)) await runOffscreenJob('release', { jobId: j.jobId }).catch(() => {});
 }
+
+// ---- end of a job: next in the queue, notification -----------------------
+
+/** A job left its slot (saving, done, failed, cancelled): start the next one, tell the user. */
+async function ended(jobId) {
+  pumpQueue().catch((e) => console.warn('[video-downloader] queue', e));
+  const s = await load(jobId);
+  if (s && (s.status === 'done' || s.status === 'error')) await notifyEnd(s).catch(() => {});
+}
+
+const NOTIFICATION_PREFIX = 'vdl-job:';
+const NOTIFICATION_ICON = 'src/icons/notification.png';
+
+async function notifyEnd(job) {
+  // A video's side job (its subtitles) is not a download of its own.
+  if (job.itemId == null || job.notified === job.status) return;
+  const { notify } = await getSettings();
+  if (!notify) return;
+  await patch(job.jobId, { notified: job.status });
+  const done = job.status === 'done';
+  const name = job.files?.length ? job.files.map((f) => f.filename).join(' + ') : job.filename;
+  /** @type {chrome.notifications.NotificationCreateOptions} */
+  const options = {
+    type: 'basic',
+    iconUrl: chrome.runtime.getURL(NOTIFICATION_ICON),
+    title: done ? t('notifyDoneTitle') : t('notifyErrorTitle'),
+    message: done ? name : `${name}\n${job.error ?? t('jobStateError')}`,
+    contextMessage: done ? t('notifyDoneHint') : job.resumable ? t('jobResumable') : '',
+    priority: 0,
+  };
+  globalThis.__vdlNotifications?.push({ id: NOTIFICATION_PREFIX + job.jobId, ...options }); // test hook
+  await chrome.notifications.create(NOTIFICATION_PREFIX + job.jobId, options);
+}
+
+// Clicking a "done" notification shows the file in its folder.
+chrome.notifications?.onClicked.addListener(async (id) => {
+  if (!id.startsWith(NOTIFICATION_PREFIX)) return;
+  chrome.notifications.clear(id).catch(() => {});
+  const job = await load(id.slice(NOTIFICATION_PREFIX.length));
+  const downloadId = job?.status === 'done' ? job.downloadIds?.[0] : null;
+  if (downloadId == null) return;
+  const [entry] = await chrome.downloads.search({ id: downloadId });
+  if (entry?.exists) chrome.downloads.show(downloadId);
+});
 
 // ---- messages from the offscreen document -------------------------------
 
@@ -655,11 +853,13 @@ export async function onComplete({ jobId, files, duration }) {
     pending: named.length,
     failed: 0,
   });
+  ended(jobId);
   for (const f of named) {
     try {
       const downloadId = await downloadBlob({
         blobUrl: f.blobUrl,
         filename: f.filename,
+        folder: state.folder ?? '',
         blobJobId: null,
         hlsJobId: jobId,
         sourceUrl: state.url,
@@ -675,19 +875,25 @@ export async function onComplete({ jobId, files, duration }) {
   if (s && s.pending === 0) {
     await finalize(jobId);
     await patch(jobId, { status: s.failed ? 'error' : 'done' });
+    await ended(jobId);
   }
 }
 
-export async function onError({ jobId, cancelled, error, detail }) {
+/** @param {{jobId:string, cancelled:boolean, error:string, detail?:Object|null, resumable?:boolean}} p
+ *   resumable: the offscreen document kept what was downloaded; downloading the same again continues it */
+export async function onError({ jobId, cancelled, error, detail, resumable = false }) {
   const state = await load(jobId);
   if (!state) return;
   await removeRule(state.ruleId);
   await patch(jobId, (s) => ({
     status: cancelled ? 'cancelled' : 'error',
     error,
+    resumable: !cancelled && Boolean(resumable),
+    phase: null,
     lastHttp: detail ? { ...detail, referer: state.contextUrl ?? null } : null,
     refreshes: detail?.refreshes ?? s.refreshes ?? 0,
   }));
+  await ended(jobId);
 }
 
 onTrackedDownloadEnd(async ({ state, error, job }) => {
@@ -702,5 +908,6 @@ onTrackedDownloadEnd(async ({ state, error, job }) => {
   if (updated.pending <= 0 && updated.status === 'saving') {
     await finalize(jobId);
     await patch(jobId, { status: updated.failed ? 'error' : 'done' });
+    await ended(jobId);
   }
 });

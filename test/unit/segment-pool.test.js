@@ -51,3 +51,48 @@ test('runPool rejects on abort and on a failing fetch', async () => {
     /boom/,
   );
 });
+
+test('runPool: a failure leaves a clean written prefix; a later run continues from `start`', async () => {
+  const written = [];
+  let writing = 0;
+  const write = async (i) => {
+    writing++;
+    await new Promise((r) => setTimeout(r, 2));
+    written.push(i);
+    writing--;
+  };
+  await assert.rejects(
+    runPool({
+      count: 10,
+      concurrency: 3,
+      fetchIndex: async (i) => {
+        await new Promise((r) => setTimeout(r, i === 6 ? 8 : 1));
+        if (i === 6) throw new Error('piece 6');
+        return i;
+      },
+      write,
+    }),
+    /piece 6/,
+  );
+  // Nothing is written once the run has failed, and no write was left running.
+  assert.equal(writing, 0);
+  const prefix = written.length;
+  assert.deepEqual(written, [...Array(prefix).keys()]);
+  assert.ok(prefix <= 6, `${prefix}`);
+  await new Promise((r) => setTimeout(r, 30));
+  assert.equal(written.length, prefix);
+
+  const fetched = [];
+  await runPool({
+    count: 10,
+    start: prefix,
+    concurrency: 3,
+    fetchIndex: async (i) => {
+      fetched.push(i);
+      return i;
+    },
+    write,
+  });
+  assert.equal(Math.min(...fetched), prefix);
+  assert.deepEqual(written, [...Array(10).keys()]);
+});

@@ -52,6 +52,11 @@ dosyasındadır ve yalnızca `.crx` paketlemek için gerekir; repoda değildir.
   bulunduğu gönderiyi indirir.
 - **Araç çubuğu göstergesi:** indirme sürerken simge tüm sekmelerde toplam
   ilerlemeyi gösterir; sayfa yenilense ya da kapansa da indirme sürer.
+- **Sıra ve bildirimler:** aynı anda en çok iki akış indirmesi (HLS/DASH)
+  çalışır (ayar: 1–4); diğerleri **Sırada** bekler ve sırayla başlar. Biri
+  bitince sistem bildirimi gelir (tıklayınca dosyayı gösterir). Yarıda kalan
+  bir akış, tarayıcı kapanana kadar indirdiklerini saklar: yeniden
+  indirildiğinde kaldığı yerden sürer.
 - **Altyazılar:** HLS ve DASH altyazı izleri, sayfadaki `<track>`'lar ve
   altyazı dosyaları kutucuk olarak görünür; tercih edilen diller önceden
   işaretlidir, videonun yanına `<ad>-<dil>.srt` (ya da `.vtt`) olarak iner ya da
@@ -71,7 +76,9 @@ temizliği · hız sınırında bekleme bütçesi · ses dili (sitenin varsayıl
 orijinal, Türkçe, İngilizce) · altyazı dilleri, biçimi ve gömme · reklamları
 katlama · video üstü düğme (fare üzerindeyken, her zaman, kapalı; gizlenecek
 siteler) · dosya adı şablonu (`{site}` `{title}` `{date}` `{time}` `{quality}`
-`{id}`) · geçmiş sınırı.
+`{id}`) · İndirilenler içinde klasör (`{site}` `{date}`, örn.
+`VideoDownloader/{site}`) · aynı anda indirme sayısı · bildirimler · geçmiş
+sınırı.
 
 ## İzinler
 
@@ -81,6 +88,7 @@ siteler) · dosya adı şablonu (`{site}` `{title}` `{date}` `{time}` `{quality}
 | `declarativeNetRequest` | Eklentinin kendi isteklerine oynatıcının Referer/Origin'ini eklemek; çoğu medya sunucusu bunu ister. Kurallar geçicidir. |
 | `offscreen` | Uzun akış indirmeleri, şifre çözme, remux ve ffmpeg.wasm'ı service worker dışında çalıştırmak. |
 | `downloads` | Dosyaları kaydetmek ve klasörde göstermek. |
+| `notifications` | Bir akış indirmesi bitince ya da başarısız olunca haber vermek (ayarlardan kapatılabilir). |
 | `storage` | Ayarlar, sekme listesi, iş durumu ve geçmiş. |
 | `tabs`, `activeTab` | İsteğin hangi sekmeye ait olduğunu bilmek, dosya adı için başlığı okumak. |
 | `scripting` | Site çıkarıcılarını kendi sitelerinde çalıştırmak (instagram.com'da Instagram, x.com ve twitter.com'da X, facebook.com'da Facebook, vimeo.com'da ve gömülü oynatıcılarında Vimeo). |
@@ -140,7 +148,8 @@ katkı kuralları [CONTRIBUTING.md](CONTRIBUTING.md), değişiklikler
 | 5a | X (Twitter): her video ve GIF için tek, tam bir MP4; başlık gönderinin metninden | ✅ |
 | 5b | Facebook: Reels, Watch ve gönderilerdeki videolar, her biri tek, tam bir MP4 (ya da birleştirilmiş DASH) | ✅ |
 | 5c | Vimeo: vimeo.com'da ve başka sitelere gömülü oynatıcılarda en büyük MP4 ya da HLS master | ✅ |
-| 6 | İş kuyruğu ve kaldığı yerden devam, performans, Firefox | |
+| 6a | İndirme sırası (aynı anda N iş), bildirimler, İndirilenler içinde klasör, yarıda kalan akışın devamı | ✅ |
+| 6b, 6c | Performans, Firefox | |
 
 ## Hızlı kontrol listesi (her sürümde elden geçirilir)
 

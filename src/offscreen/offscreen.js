@@ -18,6 +18,9 @@ import { TrackProgress } from '../lib/track-progress.js';
 
 const blobUrls = new Map(); // key (jobId or jobId:role) -> { url, fileName }
 const active = new Map(); // jobId -> StreamJob
+// Failed jobs that kept what they downloaded: a retry in this session continues them.
+const stalled = new Map(); // jobId -> { job: StreamJob, timer }
+const STALLED_TTL_MS = 60 * 60_000;
 
 const MIME_BY_EXT = {
   mp4: 'video/mp4',
@@ -91,6 +94,9 @@ async function fetchToBlob({ jobId, url }) {
  * first (small, and their signed URLs are freshest) and may fail without
  * failing the job. Every track's piece count is read before the first
  * download, so the reported total is fixed from the start.
+ *
+ * A job that fails keeps its finished tracks and the written pieces of the
+ * failed one (fMP4/DASH); resume() runs it again from there.
  */
 class StreamJob {
   constructor({ jobId, tracks, dir, postProcess, concurrency, stripJunk, cooldownSchedule, fallbackDelays, subtitleFormat }) {
@@ -106,6 +112,8 @@ class StreamJob {
     this.current = null;
     this.cancelled = false;
     this.completed = [];
+    this.downloaders = null;
+    this.next = 0; // the track to download next
     this.lastReport = 0;
     this.progress = new TrackProgress(tracks.map((t) => t.role));
   }
@@ -206,12 +214,15 @@ class StreamJob {
 
   async run() {
     try {
-      const downloaders = this.tracks.map((track, i) => this.downloaderFor(track, i));
-      await this.plan(downloaders);
-      for (let i = 0; i < this.tracks.length; i++) {
+      if (!this.downloaders) {
+        this.downloaders = this.tracks.map((track, i) => this.downloaderFor(track, i));
+        await this.plan(this.downloaders);
+      }
+      for (; this.next < this.tracks.length; this.next++) {
+        const i = this.next;
         if (this.cancelled) throw new DOMException(t('cancelled'), 'AbortError');
         const track = this.tracks[i];
-        this.current = downloaders[i];
+        this.current = this.downloaders[i];
         if (track.role === 'subtitle') {
           try {
             this.completed.push({ ...(await this.current.run()), role: 'subtitle', downloader: this.current });
@@ -235,10 +246,50 @@ class StreamJob {
         this.current = null;
       }
     } catch (error) {
-      for (const c of this.completed) await c.downloader.cleanup();
+      this.current = null;
+      if (!this.resumable(error)) await this.discard();
       throw error;
     }
     return this.completed;
+  }
+
+  /** After a failure: is there downloaded media worth keeping for a retry? */
+  resumable(error) {
+    if (this.cancelled || error?.name === 'AbortError' || !this.downloaders) return false;
+    return this.completed.some((c) => c.role !== 'subtitle') || (this.downloaders[this.next]?.written ?? 0) > 0;
+  }
+
+  /** The same download chosen again: same tracks in the same order (their URLs may have changed). */
+  matches(tracks) {
+    return (
+      Array.isArray(tracks) &&
+      tracks.length === this.tracks.length &&
+      tracks.every((t, i) => t.role === this.tracks[i].role && (t.type ?? null) === (this.tracks[i].type ?? null))
+    );
+  }
+
+  /**
+   * Prepares a run from the failed track on: fresh URLs for the tracks still
+   * to come; the failed one keeps its written pieces when its plan allows.
+   * @returns {{done:number, total:number}} pieces already there
+   */
+  resume(tracks) {
+    this.cancelled = false;
+    for (let i = this.next; i < tracks.length; i++) {
+      this.tracks[i] = tracks[i];
+      if (i === this.next && this.downloaders[i].prepareResume) this.downloaders[i].prepareResume(tracks[i]);
+      else this.downloaders[i] = this.downloaderFor(tracks[i], i);
+    }
+    // The failed track keeps its written pieces (none for TS, which starts over).
+    this.progress.reset(this.next, this.downloaders[this.next]?.written ?? 0);
+    return this.progress.snapshot();
+  }
+
+  /** Removes every file the job wrote. */
+  async discard() {
+    for (const c of this.completed) await c.downloader.cleanup();
+    for (const d of this.downloaders ?? []) await d.cleanup?.();
+    this.completed = [];
   }
 
   /**
@@ -319,8 +370,43 @@ function dashRefresher(track) {
 async function streamDownload({ jobId, tracks, postProcess, concurrency, stripJunk, cooldownSchedule, fallbackDelays, subtitleFormat }) {
   if (active.has(jobId)) throw new Error(t('errJobRunning'));
   if (!Array.isArray(tracks) || !tracks.length) throw new Error(t('errNoPieces'));
+  await dropStalled(jobId);
   const dir = await opfsDir();
   const job = new StreamJob({ jobId, tracks, dir, postProcess, concurrency, stripJunk, cooldownSchedule, fallbackDelays, subtitleFormat });
+  runJob(job);
+  return { started: true, tracks: tracks.length };
+}
+
+/**
+ * The same download again after a failure: continues the kept job when it is
+ * still here and the tracks match; otherwise { resumed: false } (the caller
+ * starts over).
+ */
+async function streamResume({ jobId, tracks }) {
+  if (active.has(jobId)) throw new Error(t('errJobRunning'));
+  const entry = stalled.get(jobId);
+  if (!entry || !entry.job.matches(tracks)) {
+    await dropStalled(jobId);
+    return { resumed: false };
+  }
+  clearTimeout(entry.timer);
+  stalled.delete(jobId);
+  const { done, total } = entry.job.resume(tracks);
+  runJob(entry.job);
+  return { resumed: true, done, total };
+}
+
+async function dropStalled(jobId) {
+  const entry = stalled.get(jobId);
+  if (!entry) return;
+  clearTimeout(entry.timer);
+  stalled.delete(jobId);
+  await entry.job.discard();
+}
+
+/** Runs (or continues) a job in the background and reports how it ended. */
+function runJob(job) {
+  const { jobId } = job;
   active.set(jobId, job);
   job
     .run()
@@ -364,14 +450,19 @@ async function streamDownload({ jobId, tracks, postProcess, concurrency, stripJu
     .catch((error) => {
       active.delete(jobId);
       const cancelled = error?.name === 'AbortError';
+      const resumable = !cancelled && job.resumable(error);
+      if (resumable) {
+        // Kept for a retry in this session; dropped after a while.
+        stalled.set(jobId, { job, timer: setTimeout(() => dropStalled(jobId), STALLED_TTL_MS) });
+      }
       notify('job:error', {
         jobId,
         cancelled,
+        resumable,
         error: cancelled ? t('cancelled') : String(error?.message ?? error),
         detail: error?.detail ?? null,
       });
     });
-  return { started: true, tracks: tracks.length };
 }
 
 async function cancel({ jobId }) {
@@ -381,10 +472,14 @@ async function cancel({ jobId }) {
   return { cancelled: true };
 }
 
-/** Releases every blob/file registered under a job id (and its per-role keys). */
+/** Releases every blob/file registered under a job id (and its per-role keys), and what a failed job kept. */
 async function release({ jobId }) {
   const dir = await opfsDir();
   let released = 0;
+  if (stalled.has(jobId)) {
+    await dropStalled(jobId);
+    released++;
+  }
   for (const [key, entry] of [...blobUrls]) {
     if (key !== jobId && !key.startsWith(`${jobId}:`)) continue;
     URL.revokeObjectURL(entry.url);
@@ -400,12 +495,13 @@ async function opfsList() {
   const dir = await opfsDir();
   const names = [];
   for await (const name of dir.keys()) names.push(name);
-  return { files: names, activeJobs: [...active.keys()], blobs: [...blobUrls.keys()] };
+  return { files: names, activeJobs: [...active.keys()], blobs: [...blobUrls.keys()], stalledJobs: [...stalled.keys()] };
 }
 
 const jobs = {
   'fetch-to-blob': fetchToBlob,
   'stream-download': streamDownload,
+  'stream-resume': streamResume,
   cancel,
   release,
   'opfs-list': opfsList,

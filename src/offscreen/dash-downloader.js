@@ -45,6 +45,10 @@ export class DashTrackDownload {
     this.onProgress = onProgress;
     this.abort = new AbortController();
     this.files = [];
+    // Pieces in the output file, kept when the track fails so a retry continues after them.
+    this.written = 0;
+    this.writtenTotal = 0;
+    this.writeFailed = false;
     this.throttle = new Throttle({ concurrency, onCooldown, ...(cooldownSchedule ? { cooldownSchedule } : {}) });
   }
 
@@ -97,6 +101,16 @@ export class DashTrackDownload {
     this.abort.abort(abortError());
   }
 
+  /** Before a retry of a failed track: the service worker's fresh plan (signed URLs expire), a new abort signal. */
+  prepareResume(track) {
+    if (track.segments) {
+      this.plan = { init: track.init ?? null, segments: track.segments };
+      this.origins = mirrorOrigins(track.segments.map((s) => s.url));
+    }
+    this.abort = new AbortController();
+    this.writeFailed = false;
+  }
+
   /** Piece count, from the plan the service worker sent. */
   async count() {
     return this.plan.segments.length;
@@ -106,24 +120,38 @@ export class DashTrackDownload {
     const { init, segments } = this.plan;
     const total = segments.length;
     if (!total) throw new Error(t('errDashNoPieces'));
-    this.onProgress?.({ done: 0, total, bytes: 0 });
+    // A retry continues after the written pieces when the plan has as many.
+    const resume = this.written > 0 && total === this.writtenTotal;
+    if (!resume) await this.cleanup();
+    this.writtenTotal = total;
 
     const fileName = `${this.jobId}-${this.tag}.out`;
     const handle = await this.dir.getFileHandle(fileName, { create: true });
-    this.files.push(fileName);
-    const writable = await handle.createWritable();
-    let bytes = 0;
-    let done = 0;
+    if (!this.files.includes(fileName)) this.files.push(fileName);
+    const writable = await handle.createWritable({ keepExistingData: resume });
+    let bytes = resume ? (await handle.getFile()).size : 0;
+    if (bytes) await writable.seek(bytes);
+    let done = this.written;
+    this.onProgress?.({ done, total, bytes });
+    const put = async (chunk) => {
+      try {
+        await writable.write(chunk);
+      } catch (error) {
+        this.writeFailed = true; // the file's end is unknown: no resuming from it
+        throw error;
+      }
+    };
 
     try {
       const clean = (data) => (this.stripJunk ? trimJunk(data, 'fmp4') : data);
-      if (init) {
+      if (init && !resume) {
         const data = clean(await this.fetchInit());
-        await writable.write(data);
+        await put(data);
         bytes += data.length;
       }
       await runPool({
         count: total,
+        start: this.written,
         concurrency: this.concurrency,
         signal: this.abort.signal,
         fetchIndex: async (i) => {
@@ -134,8 +162,9 @@ export class DashTrackDownload {
             this.throttle.release();
           }
         },
-        write: async (_i, data) => {
-          await writable.write(data);
+        write: async (i, data) => {
+          await put(data);
+          this.written = i + 1;
           bytes += data.length;
           done += 1;
           this.onProgress?.({
@@ -150,6 +179,17 @@ export class DashTrackDownload {
       });
       await writable.close();
     } catch (error) {
+      this.abort.abort(abortError()); // pieces still on their way
+      const keep = this.written > 0 && !this.writeFailed && error?.name !== 'AbortError';
+      // Committing the written prefix keeps it for a retry.
+      if (
+        keep &&
+        (await writable.close().then(
+          () => true,
+          () => false,
+        ))
+      )
+        throw error;
       await writable.abort().catch(() => {});
       await this.cleanup();
       throw error;
@@ -170,5 +210,6 @@ export class DashTrackDownload {
   async cleanup() {
     for (const name of this.files) await this.dir.removeEntry(name).catch(() => {});
     this.files = [];
+    this.written = 0;
   }
 }

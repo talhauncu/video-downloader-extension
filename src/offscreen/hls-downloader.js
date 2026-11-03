@@ -51,10 +51,22 @@ export class HlsDownload {
     this.abort = new AbortController();
     this.keys = new Map();
     this.files = [];
+    // fMP4 pieces in the output file, kept when the track fails so a retry continues after them.
+    this.written = 0;
+    this.writtenTotal = 0;
+    this.lastMapKey = null;
+    this.writeFailed = false;
   }
 
   cancel() {
     this.abort.abort(abortError());
+  }
+
+  /** Before a retry of a failed track: a fresh playlist URL (signed ones expire), a new abort signal. */
+  prepareResume(track) {
+    this.url = track.url ?? this.url;
+    this.abort = new AbortController();
+    this.writeFailed = false;
   }
 
   async resolveMediaPlaylist() {
@@ -180,10 +192,14 @@ export class HlsDownload {
     return data;
   }
 
-  async openFile(name) {
+  /** keep: append to what the file holds (a resumed track). */
+  async openFile(name, keep = false) {
     const handle = await this.dir.getFileHandle(name, { create: true });
-    this.files.push(name);
-    return { handle, writable: await handle.createWritable() };
+    if (!this.files.includes(name)) this.files.push(name);
+    const writable = await handle.createWritable({ keepExistingData: keep });
+    const size = keep ? (await handle.getFile()).size : 0;
+    if (size) await writable.seek(size);
+    return { handle, writable, size };
   }
 
   /**
@@ -200,10 +216,15 @@ export class HlsDownload {
     const total = segments.length;
     const isTs = media.container !== 'fmp4';
     this.container = isTs ? 'ts' : 'fmp4';
-    this.onProgress?.({ done: 0, total, bytes: 0 });
+    // A retry continues an fMP4 track after its written pieces, if the playlist
+    // still has as many. TS starts over: the remuxer's state is gone.
+    const resume = !isTs && this.written > 0 && total === this.writtenTotal;
+    if (!resume) await this.cleanup();
+    this.writtenTotal = total;
 
-    const out = await this.openFile(`${this.jobId}-${this.tag}.out`);
+    const out = await this.openFile(`${this.jobId}-${this.tag}.out`, resume);
     const raw = isTs ? await this.openFile(`${this.jobId}-${this.tag}.raw`) : null;
+    this.onProgress?.({ done: this.written, total, bytes: out.size });
     let remuxer = null;
     let remuxFailed = false;
     if (isTs) {
@@ -214,23 +235,31 @@ export class HlsDownload {
       }
     }
 
-    let bytes = 0;
-    let done = 0;
-    let lastMapKey = null;
+    let bytes = out.size;
+    let done = this.written;
+    const put = async (file, chunk) => {
+      try {
+        await file.writable.write(chunk);
+      } catch (error) {
+        this.writeFailed = true; // the file's end is unknown: no resuming from it
+        throw error;
+      }
+    };
 
     try {
       await runPool({
         count: total,
+        start: this.written,
         concurrency: this.concurrency,
         signal: this.abort.signal,
         fetchIndex: (i) => this.fetchSegmentAt(i, total),
         write: async (i, data) => {
           const segment = segments[i];
           if (isTs) {
-            await raw.writable.write(data);
+            await put(raw, data);
             if (remuxer && !remuxFailed) {
               try {
-                for (const chunk of remuxer.push(data)) await out.writable.write(chunk);
+                for (const chunk of remuxer.push(data)) await put(out, chunk);
               } catch (error) {
                 console.warn('[video-downloader] remux failed, keeping raw TS', error);
                 remuxFailed = true;
@@ -240,13 +269,14 @@ export class HlsDownload {
             const mapKey = segment.map
               ? `${segment.map.url}|${segment.map.byteRange?.offset ?? ''}|${segment.map.byteRange?.length ?? ''}`
               : null;
-            if (mapKey && mapKey !== lastMapKey) {
+            if (mapKey && mapKey !== this.lastMapKey) {
               const init = await this.fetchInit(i);
-              await out.writable.write(init);
+              await put(out, init);
               bytes += init.length;
-              lastMapKey = mapKey;
+              this.lastMapKey = mapKey;
             }
-            await out.writable.write(data);
+            await put(out, data);
+            this.written = i + 1;
           }
           bytes += data.length;
           done += 1;
@@ -263,6 +293,17 @@ export class HlsDownload {
       await out.writable.close();
       if (raw) await raw.writable.close();
     } catch (error) {
+      this.abort.abort(abortError()); // pieces still on their way
+      const keep = this.written > 0 && !this.writeFailed && error?.name !== 'AbortError';
+      // Committing the written prefix keeps it for a retry.
+      if (
+        keep &&
+        (await out.writable.close().then(
+          () => true,
+          () => false,
+        ))
+      )
+        throw error;
       await out.writable.abort().catch(() => {});
       if (raw) await raw.writable.abort().catch(() => {});
       await this.cleanup();
@@ -295,5 +336,7 @@ export class HlsDownload {
   async cleanup() {
     for (const name of this.files) await this.dir.removeEntry(name).catch(() => {});
     this.files = [];
+    this.written = 0;
+    this.lastMapKey = null;
   }
 }
