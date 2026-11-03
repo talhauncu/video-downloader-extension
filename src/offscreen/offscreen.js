@@ -14,6 +14,7 @@ import { parseMpd, tracksOf } from '../lib/mpd.js';
 import { fetchText } from './fetch-utils.js';
 import { mergeTracks, probe, isFFmpegLoaded, getFFmpeg } from './ffmpeg-runner.js';
 import { t, setMessages } from '../lib/i18n.js';
+import { TrackProgress } from '../lib/track-progress.js';
 
 const blobUrls = new Map(); // key (jobId or jobId:role) -> { url, fileName }
 const active = new Map(); // jobId -> StreamJob
@@ -88,7 +89,8 @@ async function fetchToBlob({ jobId, url }) {
  * sequentially and reports aggregated progress. Each track is an HLS
  * playlist URL, a DASH segment plan or a subtitle source. Subtitles go
  * first (small, and their signed URLs are freshest) and may fail without
- * failing the job.
+ * failing the job. Every track's piece count is read before the first
+ * download, so the reported total is fixed from the start.
  */
 class StreamJob {
   constructor({ jobId, tracks, dir, postProcess, concurrency, stripJunk, cooldownSchedule, fallbackDelays, subtitleFormat }) {
@@ -105,6 +107,7 @@ class StreamJob {
     this.cancelled = false;
     this.completed = [];
     this.lastReport = 0;
+    this.progress = new TrackProgress(tracks.map((t) => t.role));
   }
 
   cancel() {
@@ -116,8 +119,7 @@ class StreamJob {
     const now = Date.now();
     if (!force && now - this.lastReport < 150) return;
     this.lastReport = now;
-    const doneBefore = this.completed.reduce((s, c) => s + c.segments, 0);
-    const totalBefore = this.completed.reduce((s, c) => s + c.segments, 0);
+    const { done, total } = this.progress.snapshot();
     const bytesBefore = this.completed.reduce((s, c) => s + c.file.size, 0);
     const retriesBefore = this.completed.reduce((s, c) => s + (c.retries ?? 0), 0);
     const cooldownsBefore = this.completed.reduce((s, c) => s + (c.cooldowns ?? 0), 0);
@@ -125,8 +127,8 @@ class StreamJob {
     const mirrorBefore = this.completed.reduce((s, c) => s + (c.mirrorSwitches ?? 0), 0);
     notify('job:progress', {
       jobId: this.jobId,
-      done: doneBefore + p.done,
-      total: totalBefore + p.total,
+      done,
+      total,
       bytes: bytesBefore + p.bytes,
       retries: retriesBefore + (p.retries ?? 0),
       cooldowns: cooldownsBefore + (p.cooldowns ?? 0),
@@ -138,30 +140,79 @@ class StreamJob {
     });
   }
 
+  /** The downloader of track i; nothing is fetched yet. */
+  downloaderFor(track, i) {
+    const onProgress = (p) => {
+      this.progress.update(i, p.done, p.total);
+      this.report(i, p, p.done === p.total);
+    };
+    const onCooldown = (c) =>
+      notify('job:phase', {
+        jobId: this.jobId,
+        phase: 'cooldown',
+        until: Date.now() + c.delay,
+        status: c.status,
+        cooldown: c.cooldown,
+        of: c.of,
+      });
+    if (track.role === 'subtitle') {
+      return new SubtitleDownload({
+        track,
+        format: this.subtitleFormat,
+        onProgress,
+        onCooldown,
+        concurrency: this.concurrency,
+        cooldownSchedule: this.cooldownSchedule,
+      });
+    }
+    const common = {
+      jobId: this.jobId,
+      tag: track.role,
+      dir: this.dir,
+      onProgress,
+      onCooldown,
+      concurrency: this.concurrency,
+      stripJunk: this.stripJunk,
+      cooldownSchedule: this.cooldownSchedule,
+      fallbackDelays: this.fallbackDelays,
+    };
+    return track.type === 'dash'
+      ? new DashTrackDownload({
+          ...common,
+          plan: { init: track.init, segments: track.segments },
+          ext: track.ext,
+          refreshPlan: dashRefresher(track),
+        })
+      : new HlsDownload({ ...common, url: track.url });
+  }
+
+  /**
+   * Reads every track's piece count. A media track that cannot be read fails
+   * the job now, before anything is downloaded; a subtitle counts as 0 and
+   * reports its own error when its turn comes.
+   */
+  async plan(downloaders) {
+    for (let i = 0; i < downloaders.length; i++) {
+      if (this.cancelled) throw new DOMException(t('cancelled'), 'AbortError');
+      this.current = downloaders[i];
+      try {
+        this.progress.setTotal(i, await downloaders[i].count());
+      } catch (error) {
+        if (this.cancelled || error?.name === 'AbortError' || this.tracks[i].role !== 'subtitle') throw error;
+      }
+    }
+    this.current = null;
+  }
+
   async run() {
     try {
+      const downloaders = this.tracks.map((track, i) => this.downloaderFor(track, i));
+      await this.plan(downloaders);
       for (let i = 0; i < this.tracks.length; i++) {
         if (this.cancelled) throw new DOMException(t('cancelled'), 'AbortError');
         const track = this.tracks[i];
-        const onProgress = (p) => this.report(i, p, p.done === p.total);
-        const onCooldown = (c) =>
-          notify('job:phase', {
-            jobId: this.jobId,
-            phase: 'cooldown',
-            until: Date.now() + c.delay,
-            status: c.status,
-            cooldown: c.cooldown,
-            of: c.of,
-          });
+        this.current = downloaders[i];
         if (track.role === 'subtitle') {
-          this.current = new SubtitleDownload({
-            track,
-            format: this.subtitleFormat,
-            onProgress,
-            onCooldown,
-            concurrency: this.concurrency,
-            cooldownSchedule: this.cooldownSchedule,
-          });
           try {
             this.completed.push({ ...(await this.current.run()), role: 'subtitle', downloader: this.current });
           } catch (error) {
@@ -179,26 +230,6 @@ class StreamJob {
           this.current = null;
           continue;
         }
-        const common = {
-          jobId: this.jobId,
-          tag: track.role,
-          dir: this.dir,
-          onProgress,
-          onCooldown,
-          concurrency: this.concurrency,
-          stripJunk: this.stripJunk,
-          cooldownSchedule: this.cooldownSchedule,
-          fallbackDelays: this.fallbackDelays,
-        };
-        this.current =
-          track.type === 'dash'
-            ? new DashTrackDownload({
-                ...common,
-                plan: { init: track.init, segments: track.segments },
-                ext: track.ext,
-                refreshPlan: dashRefresher(track),
-              })
-            : new HlsDownload({ ...common, url: track.url });
         const result = await this.current.run();
         this.completed.push({ ...result, role: track.role, downloader: this.current });
         this.current = null;

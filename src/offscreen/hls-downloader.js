@@ -186,6 +186,14 @@ export class HlsDownload {
     return { handle, writable: await handle.createWritable() };
   }
 
+  /**
+   * Piece count, read before the job starts. run() reads the playlist again,
+   * so a long wait before this track does not leave it with stale signed URLs.
+   */
+  async count() {
+    return (await this.resolveMediaPlaylist()).segments.length;
+  }
+
   async run() {
     const media = await this.resolveMediaPlaylist();
     const { segments } = media;

@@ -42,8 +42,14 @@ export class SubtitleDownload {
     return [track.url];
   }
 
+  /** Piece count, read before the job starts; run() reuses the list (subtitles go first). */
+  async count() {
+    this.planned = await this.urls();
+    return this.planned.length;
+  }
+
   async run() {
-    const urls = await this.urls();
+    const urls = this.planned ?? (await this.urls());
     if (!urls.length) throw new Error(t('errNoSubtitlePieces'));
     const texts = new Array(urls.length);
     let next = 0;

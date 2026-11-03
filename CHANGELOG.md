@@ -3,7 +3,12 @@
 All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow semver.
 
-## [0.8.1] - unreleased
+## [0.8.2] - 2026-11-03
+
+### Fixed
+- The progress of a job with several tracks (subtitles, video, separate audio) no longer goes back. Every track's piece count is read before the first one starts, so the total is fixed and 100% appears only at the end. Before, it reached 100% after the subtitles and dropped as each new track added its pieces. Subtitle pieces count only in subtitle-only jobs.
+
+## [0.8.1] - 2026-11-03
 
 ### Changed
 - Debug info masks addresses (query values and long path tokens: signed URLs, sessions) and leaves the page title out, so it can be pasted into a public issue.
