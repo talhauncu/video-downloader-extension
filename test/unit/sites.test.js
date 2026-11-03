@@ -1,8 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
-import { SITES, BRIDGE_SCRIPT, siteById, siteForUrl, validateSite, validateSites } from '../../src/sites/index.js';
+import { SITES, BRIDGE_SCRIPT, siteById, siteForUrl, siteChunkKey, validateSite, validateSites } from '../../src/sites/index.js';
 import instagram, { pickBestVersion } from '../../src/sites/instagram/site.js';
+import twitter, { pickBestVariant, sizeFromUrl } from '../../src/sites/twitter/site.js';
 
 const ROOT = new URL('../../', import.meta.url);
 const valid = () => ({
@@ -96,4 +97,46 @@ test('instagram.toItems: the largest progressive version, else the DASH manifest
   assert.equal(out[1].entry.kind, 'dash');
   assert.equal(out[1].entry.manifestText, '<MPD/>');
   assert.equal(out[1].describe, true);
+});
+
+test('twitter: the highest-bitrate MP4, else the HLS master; title from the user and the text', () => {
+  const v = (url, type, bitrate) => ({ url, type, bitrate });
+  const variants = [
+    v('https://video.twimg.com/ext_tw_video/111/pu/pl/master.m3u8?tag=12', 'application/x-mpegURL', null),
+    v('https://video.twimg.com/ext_tw_video/111/pu/vid/avc1/480x270/a.mp4?tag=12', 'video/mp4', 256000),
+    v('https://video.twimg.com/ext_tw_video/111/pu/vid/avc1/1280x720/c.mp4?tag=12', 'video/mp4', 2176000),
+    v('https://video.twimg.com/ext_tw_video/111/pu/vid/avc1/640x360/b.mp4?tag=12', 'video/mp4', 832000),
+  ];
+  assert.equal(pickBestVariant(variants).bitrate, 2176000);
+  assert.deepEqual(sizeFromUrl(variants[2].url), { width: 1280, height: 720 });
+  const out = twitter.toItems(
+    {
+      items: [
+        { mediaId: '111', tweetId: '9001', user: 'someone', text: 'Look at this  https://t.co/abc', duration: 12, variants },
+        { mediaId: '222', tweetId: '9002', user: 'other', variants: [variants[0]] },
+        { mediaId: '333', tweetId: '9003', variants: [] },
+      ],
+    },
+    { pageUrl: 'https://x.com/someone/status/9001' },
+  );
+  assert.equal(out.length, 2);
+  const [video, hls] = out;
+  assert.deepEqual(
+    [video.entry.key, video.entry.kind, video.entry.code, video.entry.title, video.entry.width, video.entry.height],
+    ['twitter:111', 'video', '9001', '@someone Look at this', 1280, 720],
+  );
+  assert.equal(video.sizeFrom, variants[2].url);
+  assert.equal(video.entry.versions.length, 3);
+  assert.deepEqual([hls.entry.key, hls.entry.kind, hls.entry.title, hls.describe], ['twitter:222:hls', 'hls', '@other', true]);
+});
+
+test('siteChunkKey: X player chunks name their media; other URLs belong to no entry', () => {
+  assert.equal(siteChunkKey('https://video.twimg.com/ext_tw_video/111/pu/pl/avc1/1280x720/x.m3u8'), 'twitter:111');
+  assert.equal(siteChunkKey('https://video.twimg.com/amplify_video/222/vid/avc1/0/3000/1280x720/s.m4s'), 'twitter:222');
+  assert.equal(siteChunkKey('https://video.twimg.com/tweet_video/AbCd.mp4'), null);
+  assert.equal(siteChunkKey('https://cdn.test/videos/111/x.m3u8'), null);
+  assert.equal(siteChunkKey('not a url'), null);
+  assert.equal(siteForUrl('https://x.com/someone/status/9001')?.id, 'twitter');
+  assert.equal(siteForUrl('https://mobile.twitter.com/home')?.id, 'twitter');
+  assert.ok(validateSite({ ...valid(), chunkOf: 'no' }).some((e) => e.includes('chunkOf')));
 });

@@ -10,7 +10,7 @@
 //  - subtitle files attach to the card of their player (chips in the popup);
 //    subtitle playlists and WebVTT segments of a stream fold away
 
-import { KIND, groupKey } from './media-url.js';
+import { KIND, groupKey, normalizeMediaUrl } from './media-url.js';
 import { languageLabel } from './subtitles.js';
 
 /** Common IAB banner sizes (w×h); matched with a small tolerance. */
@@ -264,8 +264,20 @@ export function matchBlob(blob, streams, durationOf) {
   return pool.length === 1 ? pool[0] : null;
 }
 
+/** True when the tab's URL names the post `code` as a path segment (/reel/CODE/, /user/status/ID). */
+export function urlNamesCode(tabUrl, code) {
+  if (!tabUrl || !code) return false;
+  let path;
+  try {
+    path = new URL(tabUrl).pathname;
+  } catch {
+    return false;
+  }
+  return path.split('/').includes(String(code));
+}
+
 function onPage(item, tabUrl) {
-  return Boolean(item.site && item.code && tabUrl && tabUrl.includes(`/${item.code}/`));
+  return Boolean(item.site && urlNamesCode(tabUrl, item.code));
 }
 
 /**
@@ -276,15 +288,25 @@ function onPage(item, tabUrl) {
  *   recommended: Object[],      // cards, main first
  *   others: Object[],           // cards: ads, neighbours, unmatched players, segments
  *   folded: Object[],           // items folded under a master or merged into a card
- *   raw: Object[],              // raw CDN chunks hidden because site entries exist
+ *   raw: Object[],              // raw CDN chunks hidden because site entries exist (or the entry they belong to)
  *   all: Object[],              // every item, original order
  * }}
  * A card is { item, display: {width, height, duration}, merged: Object[], reason?: string }.
  */
 export function organize(items, { tabUrl = '', hideAds = true } = {}) {
   const all = [...items];
-  const hasSiteEntries = all.some((it) => it.site);
-  const raw = hasSiteEntries ? all.filter((it) => it.hidden && !it.site) : [];
+  const siteItems = all.filter((it) => it.site);
+  const siteKeys = new Set(siteItems.map((it) => it.key));
+  const siteUrls = new Set(siteItems.map((it) => normalizeMediaUrl(it.url)));
+  // Hidden: tagged player tracks (Instagram) when the page has site entries;
+  // chunks of a site entry that exists (X); captured copies of a site entry's file.
+  const raw = all.filter(
+    (it) =>
+      !it.site &&
+      ((siteItems.length && it.hidden) ||
+        (it.coveredBy && siteKeys.has(it.coveredBy)) ||
+        (it.kind !== KIND.BLOB && siteUrls.has(normalizeMediaUrl(it.url)))),
+  );
   const rawIds = new Set(raw.map((it) => it.id));
 
   // 1. Fold sub-playlists under their master.

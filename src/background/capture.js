@@ -10,6 +10,7 @@ import * as store from './store.js';
 import { updateBadge } from './badge.js';
 import { subtitleSegmentDirs } from '../lib/organize.js';
 import { guessLanguage } from '../lib/subtitles.js';
+import { siteChunkKey } from '../sites/index.js';
 
 const pageUrlByTab = new Map();
 /** `${tabId}:${frameId}` -> document URL of that frame (main frame = 0). */
@@ -140,6 +141,8 @@ async function onResponse(details) {
     // Instagram/Facebook players stream separate DASH tracks; the site
     // extractor lists the complete file instead, so these are hidden.
     hidden: Boolean(hint?.tag),
+    // A site extractor's chunk (X's HLS pieces): hidden once its entry exists.
+    coveredBy: siteChunkKey(url),
     size,
     contentType,
     pageUrl: pageUrlByTab.get(tabId) ?? details.initiator ?? null,

@@ -3,6 +3,15 @@
 All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow semver.
 
+## [0.9.0] - 2026-11-03
+
+### Added
+- X (Twitter) extractor: on x.com and twitter.com the list shows one complete MP4 per video (video and audio in one file, the highest bitrate) and per GIF, titled with the user and the post's text, instead of the player's HLS pieces. Posts without an MP4 get their HLS master, downloaded and merged. The in-page button downloads the post it sits in (the `/user/status/ID` link around the video).
+- Site definitions can name the entry a captured player chunk belongs to (`chunkOf`); the list hides such chunks only once that entry exists, so a video the extractor missed stays downloadable. A captured copy of a site entry's own file is hidden behind it too.
+
+### Changed
+- The popup's site notes name the site ("X (Twitter): …") instead of always saying Instagram.
+
 ## [0.8.2] - 2026-11-03
 
 ### Fixed

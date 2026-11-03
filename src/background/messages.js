@@ -62,6 +62,7 @@ const handlers = {
         hooked: Boolean(site.probe?.hooked),
         injectedNow: Boolean(site.injected),
         found: site.probe?.stats?.found ?? 0,
+        label: site.site ? (siteById(site.site)?.label ?? null) : null,
       },
     };
   },
@@ -202,6 +203,7 @@ const handlers = {
         source,
         site,
         hidden,
+        coveredBy,
         trackTag,
         stream,
         manifestText,
@@ -221,6 +223,7 @@ const handlers = {
         source,
         site,
         hidden,
+        coveredBy,
         trackTag,
         stream,
         manifestLength: manifestText?.length ?? null,

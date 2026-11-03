@@ -8,4 +8,7 @@ interface Window {
   __vdlInstagramVersion?: number;
   __vdlInstagramHooked?: boolean;
   __vdlInstagramStats?: Record<string, unknown>;
+  __vdlTwitterVersion?: number;
+  __vdlTwitterHooked?: boolean;
+  __vdlTwitterStats?: Record<string, unknown>;
 }

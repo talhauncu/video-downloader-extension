@@ -31,9 +31,10 @@ let registering = Promise.resolve();
  * after another: two overlapping calls (worker start-up and a caller) would
  * both see "not registered" and the second registration fails as a duplicate.
  * @param {string[]|null} [matches]  tests: these match patterns instead of each site's own
+ * @param {string|null} [siteId]  tests: only this site
  */
-export function registerSiteScripts(matches = null) {
-  const run = registering.then(() => registerNow(matches));
+export function registerSiteScripts(matches = null, siteId = null) {
+  const run = registering.then(() => registerNow(matches, siteId));
   registering = run.catch(() => {});
   return run;
 }
@@ -46,9 +47,10 @@ function scriptsOf(site, matches = site.matches) {
   ];
 }
 
-async function registerNow(matches) {
+async function registerNow(matches, siteId) {
+  const sites = SITES.filter((site) => !siteId || site.id === siteId);
   /** @type {chrome.scripting.RegisteredContentScript[]} */
-  const scripts = /** @type {any[]} */ (SITES.flatMap((site) => scriptsOf(site, matches ?? site.matches)));
+  const scripts = /** @type {any[]} */ (sites.flatMap((site) => scriptsOf(site, matches ?? site.matches)));
   const existing = await chrome.scripting.getRegisteredContentScripts({ ids: scripts.map((s) => s.id) });
   const existingIds = new Set(existing.map((s) => s.id));
   const toUpdate = scripts.filter((s) => existingIds.has(s.id));

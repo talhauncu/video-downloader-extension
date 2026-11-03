@@ -1,10 +1,11 @@
 // Site extractors: page code that finds complete files the network capture
-// cannot (Instagram's progressive MP4s with audio). Each site is a pure
+// cannot (Instagram's and X's progressive MP4s with audio). Each site is a pure
 // definition here; the service worker derives the content script
 // registration, the injection check and the entries from it
 // (src/background/sites.js). See docs/sites.md to add one.
 
 import instagram from './instagram/site.js';
+import twitter from './twitter/site.js';
 
 /**
  * @typedef {Object} SiteDefinition
@@ -18,16 +19,28 @@ import instagram from './instagram/site.js';
  * @property {'page'|'frame'} fetchContext  Referer/Origin its URLs need: the tab's page or the reporting frame
  * @property {(report:{items?:Object[]}, ctx:{pageUrl:string|null}) => {entry:Object, sizeFrom?:string, describe?:boolean}[]} toItems
  *   store entries for one extractor report; sizeFrom: URL to HEAD for the size; describe: read its manifest now
+ * @property {(url:string) => string|null} [chunkOf]
+ *   optional: the key of the entry a captured player chunk (playlist, segment) belongs to; the list hides
+ *   the chunk behind that entry once it exists
  */
 
 /** Shared isolated-world bridge (relays every site's reports). */
 export const BRIDGE_SCRIPT = 'src/sites/bridge.js';
 
 /** @type {SiteDefinition[]} */
-export const SITES = [instagram];
+export const SITES = [instagram, twitter];
 
 export function siteById(id) {
   return SITES.find((s) => s.id === id) ?? null;
+}
+
+/** Key of the site entry a captured URL is a piece of (see SiteDefinition.chunkOf), else null. */
+export function siteChunkKey(url, sites = SITES) {
+  for (const site of sites) {
+    const key = site.chunkOf?.(url);
+    if (key) return key;
+  }
+  return null;
 }
 
 /** The site a page belongs to (by its top-frame host), with test hosts added on top. */
@@ -65,6 +78,7 @@ export function validateSite(def) {
   );
   need(['page', 'frame'].includes(def?.fetchContext), "fetchContext: 'page' or 'frame'");
   need(typeof def?.toItems === 'function', 'toItems missing');
+  need(def?.chunkOf === undefined || typeof def.chunkOf === 'function', 'chunkOf: a function when given');
   return errors;
 }
 

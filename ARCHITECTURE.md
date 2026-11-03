@@ -57,7 +57,10 @@ test/             unit tests (node:test), e2e tests (Playwright), fixtures (loca
   world) relays every site's reports. `src/background/sites.js` derives the
   content script registration, the injection check (bridge ping + extractor
   version) and the debug probe from the definitions; `validateSites()` checks
-  them. Instagram is the only one so far. How to add a site:
+  them. A definition may also name the entry a captured player chunk belongs
+  to (`chunkOf`): the list then hides that chunk behind the entry (X's HLS
+  pieces), and a captured copy of a site entry's own file is hidden too. Sites:
+  Instagram, X. How to add a site:
   [docs/sites.md](docs/sites.md).
 - **Pure modules** (`src/lib/`): everything that can be tested in Node lives
   here: the HLS and DASH parsers (`m3u8.js`, `mpd.js` on a tiny XML parser,
@@ -177,8 +180,9 @@ to load the extension (a unit test checks).
 root, `position: fixed` with the highest z-index, following the video with
 `getBoundingClientRect`. Pointer tracking is window-wide (players' overlays
 swallow events). The service worker resolves the video to an entry
-(`badge:resolve`, same ranking as the popup); Instagram feed videos match by
-the post's shortcode. Progress is polled (`badge:progress`), downloads can be
+(`badge:resolve`, same ranking as the popup); feed videos of Instagram and X
+match by the post's code (`/p/CODE/`, `/user/status/ID`) read from the links
+around them. Progress is polled (`badge:progress`), downloads can be
 cancelled (two clicks), and jobs are found again after a reload by entry id,
 key and URL path.
 

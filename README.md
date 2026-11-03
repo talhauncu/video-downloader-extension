@@ -47,6 +47,10 @@ folder.
   downloads at once, several open a menu. While a stream downloads the button
   shows a progress ring; hovering it shows the file, progress and time left,
   and turns it into a cancel button (two clicks). Ads get no button.
+- **Sites with an extractor** (Instagram, X): the list shows one complete file
+  per video (video and audio together) titled with the user and the post's
+  text, instead of the player's separate stream pieces; the in-page button
+  downloads the post it sits in.
 - **Toolbar indicator**: while downloads run, the icon shows the overall
   progress on every tab; downloads go on when their page is reloaded or closed.
 - **Subtitles**: HLS and DASH subtitle tracks, `<track>`s and subtitle files
@@ -78,7 +82,7 @@ in-page button (on hover, always, off; hidden sites) · file name template
 | `downloads` | Save files and show them in their folder. |
 | `storage` | Settings, the per-tab list, job state and history. |
 | `tabs`, `activeTab` | Know which tab a request belongs to and read its title for file names. |
-| `scripting` | Run the Instagram extractor on instagram.com. |
+| `scripting` | Run the site extractors on their sites (Instagram on instagram.com, X on x.com and twitter.com). |
 
 ## Responsible use
 
@@ -132,7 +136,8 @@ on staged files. There is no build step: the files are loaded as they are.
 | 3 | Subtitles (HLS, DASH, page tracks; .srt/.vtt; embedding) and the audio language (dub or original) | ✅ |
 | 4a | Open-source readiness: license, docs, English/Turkish interface, lint and type checks, release packages | ✅ |
 | 4b | Site extractor architecture (definitions under `src/sites/`, guide in `docs/sites.md`); README images | ✅ |
-| 5 | Twitter/X, Facebook, Vimeo | |
+| 5a | X (Twitter): one complete MP4 per video and GIF, the post's text as the title | ✅ |
+| 5b, 5c | Facebook, Vimeo | |
 | 6 | Job queue and resume, performance, Firefox | |
 
 ## License

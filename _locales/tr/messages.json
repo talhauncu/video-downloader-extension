@@ -429,10 +429,10 @@
     "message": "$1 altyazı MP4 içinde (desteklenmiyor)"
   },
   "siteNoteReload": {
-    "message": "Instagram: eklenti bu sekme açıldıktan sonra yüklendi. Tam dosyalar için sayfayı yenileyin (⌘R), sonra popup'ı tekrar açın."
+    "message": "$1: eklenti bu sekme açıldıktan sonra yüklendi. Tam dosyalar için sayfayı yenileyin (⌘R), sonra popup'ı tekrar açın."
   },
   "siteNoteNoEntries": {
-    "message": "Instagram: bu sayfada tam dosya bilgisi bulunamadı, yalnızca ham parçalar listeleniyor. Reel'i açıp sayfayı yenilemeyi deneyin."
+    "message": "$1: bu sayfada tam dosya bilgisi bulunamadı, yalnızca ham parçalar listeleniyor. Gönderiyi açıp sayfayı yenilemeyi deneyin."
   },
   "popupPlayerStream": {
     "message": "Oynatıcı akışı"
