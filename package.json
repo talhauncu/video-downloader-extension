@@ -1,6 +1,6 @@
 {
   "name": "video-downloader-extension",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "private": true,
   "description": "Chrome MV3 extension that downloads videos (MP4, HLS, DASH) and their subtitles from web pages",
   "type": "module",

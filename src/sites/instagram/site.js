@@ -3,6 +3,7 @@
 // file per video instead. See main.js for the extractor.
 
 import { KIND } from '../../lib/media-url.js';
+import { truncate } from '../../lib/filename.js';
 
 /** Largest progressive version (they carry video and audio). */
 export function pickBestVersion(versions = []) {
@@ -10,7 +11,7 @@ export function pickBestVersion(versions = []) {
 }
 
 const titleOf = (item) =>
-  [item.username ? `@${item.username}` : null, item.caption ? item.caption.split('\n')[0].slice(0, 60) : null].filter(Boolean).join(' ');
+  [item.username ? `@${item.username}` : null, item.caption ? truncate(item.caption.split('\n')[0], 60) : null].filter(Boolean).join(' ');
 
 /** @type {import('../index.js').SiteDefinition} */
 export default {

@@ -4,6 +4,7 @@
 // file. See main.js for the extractor.
 
 import { KIND } from '../../lib/media-url.js';
+import { truncate } from '../../lib/filename.js';
 
 /** Highest-bitrate MP4 variant (each carries video and audio); null when there is none. */
 export function pickBestVariant(variants = []) {
@@ -30,7 +31,7 @@ const titleOf = (item) => {
     .replace(/https?:\/\/t\.co\/\S+/g, '')
     .replace(/\s+/g, ' ')
     .trim();
-  return [item.user ? `@${item.user}` : null, text ? text.slice(0, 60) : null].filter(Boolean).join(' ') || null;
+  return [item.user ? `@${item.user}` : null, text ? truncate(text, 60) : null].filter(Boolean).join(' ') || null;
 };
 
 /** @type {import('../index.js').SiteDefinition} */
