@@ -264,16 +264,16 @@ export function matchBlob(blob, streams, durationOf) {
   return pool.length === 1 ? pool[0] : null;
 }
 
-/** True when the tab's URL names the post `code` as a path segment (/reel/CODE/, /user/status/ID). */
+/** True when the tab's URL names the post `code`: a path segment (/reel/CODE/, /user/status/ID) or a query value (/watch/?v=ID). */
 export function urlNamesCode(tabUrl, code) {
   if (!tabUrl || !code) return false;
-  let path;
+  let u;
   try {
-    path = new URL(tabUrl).pathname;
+    u = new URL(tabUrl);
   } catch {
     return false;
   }
-  return path.split('/').includes(String(code));
+  return u.pathname.split('/').includes(String(code)) || [...u.searchParams.values()].includes(String(code));
 }
 
 function onPage(item, tabUrl) {
@@ -298,14 +298,14 @@ export function organize(items, { tabUrl = '', hideAds = true } = {}) {
   const siteItems = all.filter((it) => it.site);
   const siteKeys = new Set(siteItems.map((it) => it.key));
   const siteUrls = new Set(siteItems.map((it) => normalizeMediaUrl(it.url)));
-  // Hidden: tagged player tracks (Instagram) when the page has site entries;
-  // chunks of a site entry that exists (X); captured copies of a site entry's file.
+  // Hidden: anything covered by an entry that exists (X player chunks, a
+  // Facebook manifest entry once the video's MP4 is known); tagged player
+  // tracks (Instagram, Facebook) when the page has site entries; captured
+  // copies of a site entry's file.
   const raw = all.filter(
     (it) =>
-      !it.site &&
-      ((siteItems.length && it.hidden) ||
-        (it.coveredBy && siteKeys.has(it.coveredBy)) ||
-        (it.kind !== KIND.BLOB && siteUrls.has(normalizeMediaUrl(it.url)))),
+      (it.coveredBy && it.key !== it.coveredBy && siteKeys.has(it.coveredBy)) ||
+      (!it.site && ((siteItems.length && it.hidden) || (it.kind !== KIND.BLOB && siteUrls.has(normalizeMediaUrl(it.url))))),
   );
   const rawIds = new Set(raw.map((it) => it.id));
 
@@ -367,7 +367,8 @@ export function organize(items, { tabUrl = '', hideAds = true } = {}) {
   }
 
   // 3. Split into recommended and others.
-  const pageEntry = all.find((it) => onPage(it, tabUrl)) ?? null;
+  // A hidden entry (a manifest behind its MP4) never stands for the page.
+  const pageEntry = all.find((it) => !rawIds.has(it.id) && onPage(it, tabUrl)) ?? null;
   const recommendedCards = [];
   const otherCards = [];
   for (const item of all) {

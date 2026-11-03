@@ -401,3 +401,25 @@ test('urlNamesCode: the code must be a whole path segment', () => {
   assert.equal(urlNamesCode('', '1'), false);
   assert.equal(urlNamesCode('https://x.com/', null), false);
 });
+
+test('organize: a Facebook manifest entry hides behind the MP4 entry of the same video', () => {
+  const TAB = 'https://www.facebook.com/watch/?v=503';
+  const dash = it({
+    kind: 'dash',
+    site: 'facebook',
+    key: 'facebook:503:dash',
+    coveredBy: 'facebook:503',
+    code: '503',
+    url: 'https://www.facebook.com/watch/?v=503#dash',
+  });
+  const mp4 = it({ kind: 'video', site: 'facebook', key: 'facebook:503', code: '503', url: 'https://video.fbcdn.test/hd.mp4' });
+  assert.deepEqual(organize([dash], { tabUrl: TAB }).raw, []);
+  const o = organize([dash, mp4], { tabUrl: TAB });
+  assert.deepEqual(
+    o.raw.map((x) => x.key),
+    ['facebook:503:dash'],
+  );
+  assert.equal(o.main.item.key, 'facebook:503');
+  assert.equal(urlNamesCode(TAB, '503'), true);
+  assert.equal(urlNamesCode('https://www.facebook.com/watch/?v=5030', '503'), false);
+});

@@ -1,11 +1,12 @@
 // Site extractors: page code that finds complete files the network capture
-// cannot (Instagram's and X's progressive MP4s with audio). Each site is a pure
+// cannot (progressive MP4s with audio on Instagram, X and Facebook). Each site is a pure
 // definition here; the service worker derives the content script
 // registration, the injection check and the entries from it
 // (src/background/sites.js). See docs/sites.md to add one.
 
 import instagram from './instagram/site.js';
 import twitter from './twitter/site.js';
+import facebook from './facebook/site.js';
 
 /**
  * @typedef {Object} SiteDefinition
@@ -28,7 +29,7 @@ import twitter from './twitter/site.js';
 export const BRIDGE_SCRIPT = 'src/sites/bridge.js';
 
 /** @type {SiteDefinition[]} */
-export const SITES = [instagram, twitter];
+export const SITES = [instagram, twitter, facebook];
 
 export function siteById(id) {
   return SITES.find((s) => s.id === id) ?? null;

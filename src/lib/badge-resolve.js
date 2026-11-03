@@ -59,7 +59,7 @@ function notesFor(item) {
 }
 
 /**
- * Site players (Instagram, X) stream through MSE without a playlist; their
+ * Site players (Instagram, X, Facebook) stream through MSE without a playlist; their
  * complete files are the site entries. The post's shortcode, read from the
  * page around the <video>, identifies the entry exactly. Without a code a
  * single duration match is accepted, and the open page's entry when the URL

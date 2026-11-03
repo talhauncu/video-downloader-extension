@@ -4,6 +4,7 @@ import path from 'node:path';
 import { launchWithExtension, EXTENSION_PATH } from './helpers.js';
 import { startServer } from '../fixtures/server.js';
 import instagram from '../../src/sites/instagram/site.js';
+import { SITES } from '../../src/sites/index.js';
 
 const MEDIA = path.join(EXTENSION_PATH, 'test/fixtures/media');
 let ext, server;
@@ -109,12 +110,7 @@ test('reels become one complete entry each; raw DASH chunks are hidden behind a 
   );
   expect(debug.ok).toBe(true);
   // Every site's scripts are registered; Instagram's carry the fixture origin.
-  expect(debug.result.siteScripts.map((s) => s.id).sort()).toEqual([
-    'instagram-bridge',
-    'instagram-main',
-    'twitter-bridge',
-    'twitter-main',
-  ]);
+  expect(debug.result.siteScripts.map((s) => s.id).sort()).toEqual(SITES.flatMap((s) => [`${s.id}-bridge`, `${s.id}-main`]).sort());
   expect(debug.result.siteScripts.find((s) => s.id === 'instagram-main').matches).toContain('http://127.0.0.1/*');
   expect(debug.result.siteStats.hooked).toBe(true);
   expect(debug.result.mainWorldProbe.hooked).toBe(true);

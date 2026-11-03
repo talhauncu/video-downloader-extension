@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"><title>Facebook Benzeri Sayfa</title>
+  <style>article { width: 360px; margin: 24px auto; border: 1px solid #ccc; } video { width: 360px; height: 220px; background: #000; display: block; }</style>
+</head>
+<body>
+  <main id="feed"></main>
+  <script>
+    // Posts like Facebook's feed: an MSE (blob:) player per video and the link
+    // that names it (/watch/?v=, /<page>/videos/<id>/, /reel/<id>).
+    const ID = (n) => `100000000000050${n}`;
+    const posts = [
+      [ID(1), `/watch/?v=${ID(1)}`],
+      [ID(2), `/birsayfa/videos/kisa-baslik/${ID(2)}/`],
+      [ID(3), `/reel/${ID(3)}`],
+      [ID(4), `/watch/?v=${ID(4)}&ref=feed`],
+    ];
+    for (const [id, link] of posts) {
+      const article = document.createElement('article');
+      article.innerHTML = `<div class="media"><video muted playsinline data-id="${id}"></video></div>`
+        + `<div class="meta"><a href="https://www.facebook.com${link}"><span>2 sa</span></a> · <a href="/birsayfa">Bir Sayfa</a></div>`;
+      document.getElementById('feed').appendChild(article);
+      const video = article.querySelector('video');
+      const ms = new MediaSource();
+      video.src = URL.createObjectURL(ms);
+      ms.addEventListener('sourceopen', () => { ms.duration = 4; });
+    }
+
+    const o = location.origin;
+    const mpd = `<?xml version="1.0"?><MPD xmlns="urn:mpeg:dash:schema:mpd:2011" type="static" mediaPresentationDuration="PT4S"><Period>` +
+      `<AdaptationSet contentType="video"><Representation id="v" mimeType="video/mp4" codecs="avc1.64001e" bandwidth="800000" width="640" height="360">` +
+      `<BaseURL>${o}/media/dash-base/DASH_360.mp4</BaseURL><SegmentBase indexRange="900-1000"><Initialization range="0-899"/></SegmentBase></Representation></AdaptationSet>` +
+      `<AdaptationSet contentType="audio"><Representation id="a" mimeType="audio/mp4" codecs="mp4a.40.2" bandwidth="48000" audioSamplingRate="44100">` +
+      `<BaseURL>${o}/media/dash-base/DASH_AUDIO_48.mp4</BaseURL><SegmentBase indexRange="700-800"><Initialization range="0-699"/></SegmentBase></Representation></AdaptationSet>` +
+      `</Period></MPD>`;
+    const story = (id, owner, text, media) => ({ node: { comet_sections: { content: { story: {
+      actors: [{ name: owner }], message: { text }, attachments: [{ media: { __typename: 'Video', id, videoId: id, ...media } }] } } } } });
+
+    // Initial page data (inline JSON, like Facebook's server-rendered blocks): the
+    // open video with HD and SD files, and a reel that only has its manifest yet.
+    const initial = document.createElement('script');
+    initial.type = 'application/json';
+    initial.textContent = JSON.stringify({ require: [['ScheduledServerJS', 'handle', null, [{ __bbox: { result: { data: { feed: { edges: [
+      story(ID(1), 'Bir Sayfa', 'İlk video\nikinci satır', { browser_native_hd_url: `${o}/media/sample.mp4?fb=hd`, browser_native_sd_url: `${o}/media/sample.webm?fb=sd`, playable_duration_in_ms: 4000, width: 320, height: 180 }),
+      story(ID(3), 'Reels Hesabı', 'Bir reel', { dash_manifest: mpd, playable_duration_in_ms: 4000 }),
+    ] } } } } }]]] });
+    document.head.appendChild(initial);
+
+    // Player pieces, like fbcdn's byte-range requests with an efg tag.
+    const efg = (tag) => btoa(JSON.stringify({ vencode_tag: tag }));
+    fetch(`/media/sample.mp4?efg=${efg('dash_vp9-basic-gen2_720p')}&bytestart=0&byteend=2047`).then(() => { document.body.dataset.chunksLoaded = 'true'; });
+
+    // Called by the test once the extractor is in place: a GraphQL response with
+    // several JSON documents, one per line (the SD-only video, and the reel's MP4
+    // which only had its manifest so far); then a block added like an in-app
+    // navigation, with a video that only ever has its manifest.
+    window.loadApi = () =>
+      fetch('/media/fb/graphql.txt').then((r) => r.text()).then(() => {
+        const late = document.createElement('script');
+        late.type = 'application/json';
+        late.textContent = JSON.stringify({ data: { video: { id: ID(4), videoId: ID(4), owner: { name: 'Manifest Sayfası' }, title: { text: 'Yalnızca manifest' },
+          playable_duration_in_ms: 4000, dash_manifests: [{ manifest_xml: mpd }] } } });
+        document.head.appendChild(late);
+        document.body.dataset.apiLoaded = 'true';
+      });
+  </script>
+</body>
+</html>

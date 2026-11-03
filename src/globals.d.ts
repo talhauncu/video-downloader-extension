@@ -11,4 +11,7 @@ interface Window {
   __vdlTwitterVersion?: number;
   __vdlTwitterHooked?: boolean;
   __vdlTwitterStats?: Record<string, unknown>;
+  __vdlFacebookVersion?: number;
+  __vdlFacebookHooked?: boolean;
+  __vdlFacebookStats?: Record<string, unknown>;
 }
