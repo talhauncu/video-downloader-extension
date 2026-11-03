@@ -41,3 +41,17 @@ test('TrackProgress: a track whose playlist changed since planning uses its own 
   p.update(1, 0, 6);
   assert.deepEqual(p.snapshot(), { done: 4, total: 10 });
 });
+
+test('TrackProgress: a track run again after a failure starts from the pieces it kept', () => {
+  const p = new TrackProgress(['video', 'audio']);
+  p.setTotal(0, 10);
+  p.setTotal(1, 6);
+  p.update(0, 10, 10);
+  p.update(1, 4, 6);
+  p.reset(1, 3); // three pieces were written before the failure
+  assert.deepEqual(p.snapshot(), { done: 13, total: 16 });
+  p.reset(1, 0); // a TS track starts over
+  assert.deepEqual(p.snapshot(), { done: 10, total: 16 });
+  p.update(1, 6, 6);
+  assert.deepEqual(p.snapshot(), { done: 16, total: 16 });
+});

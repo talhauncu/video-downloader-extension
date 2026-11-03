@@ -58,3 +58,20 @@ test('normalizeSettings: subtitle languages, format and embedding', () => {
   assert.equal(normalizeSettings({ uiLanguage: 'de' }).uiLanguage, 'auto');
   assert.equal(normalizeSettings({ embedSubtitles: 'yes' }).embedSubtitles, false);
 });
+
+test('normalizeSettings: download queue, notifications and folder', () => {
+  const d = normalizeSettings({});
+  assert.equal(d.maxJobs, 2);
+  assert.equal(d.notify, true);
+  assert.equal(d.subfolder, '');
+  assert.equal(normalizeSettings({ maxJobs: '4' }).maxJobs, 4);
+  assert.equal(normalizeSettings({ maxJobs: 1 }).maxJobs, 1);
+  assert.equal(normalizeSettings({ maxJobs: 0 }).maxJobs, 2);
+  assert.equal(normalizeSettings({ maxJobs: 5 }).maxJobs, 2);
+  assert.equal(normalizeSettings({ maxJobs: 1.5 }).maxJobs, 2);
+  assert.equal(normalizeSettings({ notify: false }).notify, false);
+  assert.equal(normalizeSettings({ notify: 'no' }).notify, true);
+  assert.equal(normalizeSettings({ subfolder: ' VideoDownloader/{site}/ ' }).subfolder, 'VideoDownloader/{site}');
+  assert.equal(normalizeSettings({ subfolder: '../../etc' }).subfolder, 'etc');
+  assert.equal(normalizeSettings({ subfolder: 42 }).subfolder, '');
+});

@@ -57,6 +57,16 @@
         <input type="number" id="maxCooldownMinutes" min="0" max="120" step="1" />
       </label>
       <p class="hint" data-i18n="optCooldownHint"></p>
+      <label class="row">
+        <span data-i18n="optMaxJobs"></span>
+        <input type="number" id="maxJobs" min="1" max="4" step="1" />
+      </label>
+      <p class="hint" data-i18n="optMaxJobsHint"></p>
+      <label class="row">
+        <input type="checkbox" id="notify" />
+        <span data-i18n="optNotify"></span>
+      </label>
+      <p class="hint" data-i18n="optNotifyHint"></p>
     </section>
 
     <section>
@@ -130,6 +140,11 @@
       <p class="hint" data-i18n-html="optTemplateHint"></p>
       <p class="preview"><span data-i18n="optPreview">Example:</span> <code id="preview"></code></p>
       <button type="button" id="resetTemplate" class="link" data-i18n="optResetTemplate"></button>
+      <label class="row column">
+        <span data-i18n="optSubfolder"></span>
+        <input type="text" id="subfolder" spellcheck="false" placeholder="VideoDownloader/{site}" />
+      </label>
+      <p class="hint" data-i18n-html="optSubfolderHint"></p>
     </section>
 
     <section>

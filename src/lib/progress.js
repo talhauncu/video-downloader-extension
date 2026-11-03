@@ -17,7 +17,7 @@ export function formatEta(seconds) {
   return rest ? t('etaHoursMinutes', h, rest) : t('etaHours', h);
 }
 
-const ACTIVE = new Set(['downloading', 'saving']);
+const ACTIVE = new Set(['queued', 'downloading', 'saving']);
 export const isActive = (p) => Boolean(p && ACTIVE.has(p.status));
 
 /**
@@ -37,14 +37,17 @@ export function streamProgress(job, now = Date.now()) {
           ? Math.min(100, Math.round((job.done / job.total) * 100))
           : 0;
 
-  // Average rate since the start, without time spent in rate-limit waits.
+  // Average rate since the start (or the resume), without time spent in rate-limit waits.
   let etaSec = null;
-  if (job.status === 'downloading' && !merging && !waiting && job.done > 0 && job.total > job.done && job.startedAt) {
+  const fetched = job.done - (job.resumedFrom ?? 0);
+  if (job.status === 'downloading' && !merging && !waiting && fetched > 0 && job.total > job.done && job.startedAt) {
     const elapsed = Math.max(1, (now - job.startedAt - (job.waitedMs ?? 0)) / 1000);
-    etaSec = ((job.total - job.done) * elapsed) / job.done;
+    etaSec = ((job.total - job.done) * elapsed) / fetched;
   }
 
   const parts = [];
+  if (job.status === 'queued') parts.push(t('progressQueuedDetail'));
+  if (job.resumedFrom && job.status === 'downloading') parts.push(t('progressResumed', job.resumedFrom));
   if (merging) parts.push(t('progressMerging', t('percent', pct)));
   else if (waiting) {
     const left = Math.max(0, Math.round(((job.cooldownUntil ?? now) - now) / 1000));
@@ -55,16 +58,20 @@ export function streamProgress(job, now = Date.now()) {
   const eta = formatEta(etaSec);
   if (eta) parts.push(t('progressRemaining', eta));
   if (job.status === 'error' && job.error) parts.push(job.error);
+  if (job.status === 'error' && job.resumable) parts.push(t('jobResumable'));
 
-  const label = merging
-    ? t('progressMerging', t('percent', pct))
-    : waiting
-      ? t('progressWaiting')
-      : job.status === 'saving'
-        ? t('progressSaving')
-        : job.status === 'downloading'
-          ? t('percent', pct)
-          : null;
+  const label =
+    job.status === 'queued'
+      ? t('progressQueued')
+      : merging
+        ? t('progressMerging', t('percent', pct))
+        : waiting
+          ? t('progressWaiting')
+          : job.status === 'saving'
+            ? t('progressSaving')
+            : job.status === 'downloading'
+              ? t('percent', pct)
+              : null;
 
   return {
     type: 'stream',

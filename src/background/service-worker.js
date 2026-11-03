@@ -7,6 +7,7 @@ import { cdnTrackHint } from '../lib/media-url.js';
 import { registerSiteScripts, watchSiteTabs, ensureInjected, addSiteHost } from './sites.js';
 import { registerCommands, downloadBest } from './quick.js';
 import { startIndicator } from './indicator.js';
+import { pumpQueue } from './jobs.js';
 import { initI18n, currentLanguage } from '../lib/i18n.js';
 import { getSettings } from '../lib/settings.js';
 
@@ -26,6 +27,8 @@ registerSiteScripts().catch((e) => console.warn('[video-downloader] site scripts
 registerCommands();
 startIndicator();
 watchSiteTabs();
+// Queued downloads whose turn came while the service worker was asleep.
+pumpQueue().catch((e) => console.warn('[video-downloader] queue', e));
 // Lets tests (and debugging) confirm the listeners are attached.
 globalThis.__vdlReady = true;
 // Debug hooks for tests and the devtools console of the service worker.

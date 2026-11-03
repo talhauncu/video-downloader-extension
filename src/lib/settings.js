@@ -1,7 +1,7 @@
 // User settings in chrome.storage.sync with defaults. Read by the service
 // worker; edited on the options page.
 
-import { DEFAULT_TEMPLATE } from './filename.js';
+import { DEFAULT_TEMPLATE, normalizeFolderTemplate } from './filename.js';
 import { normalizeLanguage } from './subtitles.js';
 
 /** @type {Readonly<Record<string, any>>} */
@@ -22,6 +22,9 @@ export const DEFAULTS = Object.freeze({
   embedSubtitles: false, // ffmpeg.wasm: put the chosen subtitles into the MP4 (mov_text) instead of separate files
   audioLang: 'default', // separate audio tracks: 'default' (the site's) | 'original' (not the dub) | language code
   uiLanguage: 'auto', // interface language: 'auto' (Chrome's) | 'en' | 'tr'
+  maxJobs: 2, // stream jobs (HLS/DASH) downloading at once (1-4); the rest wait in the queue
+  notify: true, // system notification when a stream job ends (done or failed)
+  subfolder: '', // folder inside Downloads, a template with {site} {date} ('' = Downloads itself)
 });
 
 export function normalizeSettings(input) {
@@ -75,6 +78,10 @@ export function normalizeSettings(input) {
   if (['default', 'original'].includes(input.audioLang)) out.audioLang = input.audioLang;
   else if (normalizeLanguage(input.audioLang)) out.audioLang = normalizeLanguage(input.audioLang);
   if (['auto', 'en', 'tr'].includes(input.uiLanguage)) out.uiLanguage = input.uiLanguage;
+  const m = Number(input.maxJobs);
+  if (Number.isInteger(m) && m >= 1 && m <= 4) out.maxJobs = m;
+  if (typeof input.notify === 'boolean') out.notify = input.notify;
+  if (typeof input.subfolder === 'string') out.subfolder = normalizeFolderTemplate(input.subfolder);
   const h = Number(input.historyLimit);
   if (Number.isInteger(h) && h >= 0 && h <= 500) out.historyLimit = h;
   return out;

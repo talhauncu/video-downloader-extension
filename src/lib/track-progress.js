@@ -24,6 +24,11 @@ export class TrackProgress {
     this.done[i] = Math.max(this.done[i], Math.min(done, this.totals[i]));
   }
 
+  /** A track run again after a failure: it has `done` pieces (what it kept), maybe fewer than before. */
+  reset(i, done) {
+    this.done[i] = Math.max(0, Math.min(done, this.totals[i]));
+  }
+
   /** @returns {{done:number, total:number}} counted pieces of the whole job */
   snapshot() {
     let done = 0;

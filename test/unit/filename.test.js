@@ -1,6 +1,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildFilename, sanitizePart, siteFromUrl, timestamp, truncate } from '../../src/lib/filename.js';
+import {
+  buildFilename,
+  sanitizePart,
+  siteFromUrl,
+  timestamp,
+  truncate,
+  normalizeFolderTemplate,
+  buildFolder,
+  inFolder,
+} from '../../src/lib/filename.js';
 
 const date = new Date(2026, 9, 31, 14, 5); // 2026-10-31 14:05 local
 
@@ -60,4 +69,25 @@ test('truncate never splits an emoji; long titles keep whole characters', () => 
   });
   assert.ok(name.length <= 120, name.length);
   assert.ok(!/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/.test(name), 'no unpaired half');
+});
+
+test('normalizeFolderTemplate keeps a relative path: no "..", no empty parts, no illegal characters', () => {
+  assert.equal(normalizeFolderTemplate(''), '');
+  assert.equal(normalizeFolderTemplate('  Video Downloader / {site}/ '), 'Video Downloader/{site}');
+  assert.equal(normalizeFolderTemplate('\\\\a\\b'), 'a/b');
+  assert.equal(normalizeFolderTemplate('/abs/../x/./y.'), 'abs/x/y');
+  assert.equal(normalizeFolderTemplate('C:/Users/x'), 'C/Users/x');
+  assert.equal(normalizeFolderTemplate('../..'), '');
+  assert.equal(normalizeFolderTemplate('a/b/c/d/e/f/g'), 'a/b/c/d/e');
+  assert.equal(normalizeFolderTemplate('x'.repeat(80)), 'x'.repeat(60));
+});
+
+test('buildFolder fills {site} and {date}; an empty template is no folder', () => {
+  assert.equal(buildFolder('', { pageUrl: 'https://www.x.com/a', date }), '');
+  assert.equal(buildFolder('VideoDownloader/{site}', { pageUrl: 'https://www.x.com/a', date }), 'VideoDownloader/x.com');
+  assert.equal(buildFolder('{date}/{site}', { pageUrl: 'https://haberler.com/', date }), '20261031/haberler.com');
+  // Unknown tokens are dropped, and a part they leave empty goes with them.
+  assert.equal(buildFolder('Videos/{nope}/{site}', { pageUrl: 'https://a.test/', date }), 'Videos/a.test');
+  assert.equal(inFolder('', 'a.mp4'), 'a.mp4');
+  assert.equal(inFolder('Videos/a.test', 'a.mp4'), 'Videos/a.test/a.mp4');
 });

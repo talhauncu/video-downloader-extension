@@ -700,5 +700,47 @@
   },
   "optHistoryCleared": {
     "message": "Geçmiş temizlendi"
+  },
+  "jobStateQueued": {
+    "message": "Sırada"
+  },
+  "progressQueued": {
+    "message": "Sırada"
+  },
+  "progressQueuedDetail": {
+    "message": "Süren bir indirme bitince başlar"
+  },
+  "progressResumed": {
+    "message": "$1 parçadan sonra devam etti"
+  },
+  "jobResumable": {
+    "message": "Yeniden indirince kaldığı yerden sürer"
+  },
+  "notifyDoneTitle": {
+    "message": "İndirme tamamlandı"
+  },
+  "notifyErrorTitle": {
+    "message": "İndirme başarısız"
+  },
+  "notifyDoneHint": {
+    "message": "Klasörde göstermek için tıklayın"
+  },
+  "optMaxJobs": {
+    "message": "Aynı anda indirme (HLS/DASH)"
+  },
+  "optMaxJobsHint": {
+    "message": "Fazlası sırada bekler (\"Sırada\") ve biri bitince başlar. Düz video dosyalarını Chrome kendisi indirir, onlar beklemez."
+  },
+  "optNotify": {
+    "message": "İndirme bitince bildirim göster"
+  },
+  "optNotifyHint": {
+    "message": "Bir HLS/DASH indirmesi bittiğinde ya da başarısız olduğunda sistem bildirimi; tıklayınca dosyayı gösterir."
+  },
+  "optSubfolder": {
+    "message": "İndirilenler içinde klasör"
+  },
+  "optSubfolderHint": {
+    "message": "Boş: doğrudan İndirilenler. Alanlar: <code>{site}</code> <code>{date}</code>; <code>/</code> alt klasör açar, örn. <code>VideoDownloader/{site}</code>."
   }
 }

@@ -23,7 +23,7 @@ async function compute() {
   /** @type {Record<string, any>} */
   const all = await chrome.storage.session.get(null);
   const streams = Object.entries(all)
-    .filter(([key, v]) => key.startsWith('job:') && (v.status === 'downloading' || v.status === 'saving'))
+    .filter(([key, v]) => key.startsWith('job:') && ['queued', 'downloading', 'saving'].includes(v.status))
     .map(([, v]) => v);
   const fractions = streams.map((j) => (j.status === 'saving' ? 1 : j.phase === 'merging' ? 0.99 : j.total ? j.done / j.total : 0));
   const names = streams.map((j) => j.filename);

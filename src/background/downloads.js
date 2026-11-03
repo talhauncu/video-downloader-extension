@@ -11,7 +11,7 @@
 // Stream jobs (HLS/DASH) hand their finished Blob to `downloadBlob`.
 
 import * as store from './store.js';
-import { buildFilename } from '../lib/filename.js';
+import { buildFilename, buildFolder, inFolder } from '../lib/filename.js';
 import { extensionOf, KIND } from '../lib/media-url.js';
 import { runOffscreenJob } from './offscreen.js';
 import { addUrlRule, removeRule } from './header-rules.js';
@@ -117,7 +117,7 @@ async function startFallback(job) {
     }
     const downloadId = await chrome.downloads.download({
       url: blobUrl,
-      filename: job.filename,
+      filename: inFolder(job.folder, job.filename),
       conflictAction: 'uniquify',
       saveAs: false,
     });
@@ -197,7 +197,7 @@ export async function downloadItem({ tabId, id }) {
   const pageUrl = item.pageUrl ?? tab?.url ?? null;
   const contextUrl = item.frameUrl ?? pageUrl; // the player iframe when there is one
   const ext = extensionOf(item.url) || DEFAULT_EXT[item.kind];
-  const { filenameTemplate } = await getSettings();
+  const { filenameTemplate, subfolder } = await getSettings();
   const quality = item.height ? `${item.height}p` : null;
   // {site}: the page open in the tab now (an entry's recorded page can be an earlier one).
   const filename = buildFilename({
@@ -213,6 +213,7 @@ export async function downloadItem({ tabId, id }) {
     pageUrl,
     contextUrl,
     filename,
+    folder: buildFolder(subfolder, { pageUrl: tab?.url ?? pageUrl }),
     mode: 'direct',
     ruleId: null,
     blobJobId: null,
@@ -228,7 +229,12 @@ export async function downloadItem({ tabId, id }) {
   job.ruleId = await addUrlRule(item.url, contextUrl);
   remember(job);
   try {
-    const downloadId = await chrome.downloads.download({ url: item.url, filename, conflictAction: 'uniquify', saveAs: false });
+    const downloadId = await chrome.downloads.download({
+      url: item.url,
+      filename: inFolder(job.folder, filename),
+      conflictAction: 'uniquify',
+      saveAs: false,
+    });
     track(downloadId, job);
     return { downloadId, filename, itemId: id };
   } catch (error) {
@@ -239,10 +245,17 @@ export async function downloadItem({ tabId, id }) {
 
 /**
  * Downloads a Blob produced by the offscreen document; releases it afterwards.
+ * @param {{blobUrl:string, filename:string, folder?:string, blobJobId:string|null, hlsJobId:string|null,
+ *   sourceUrl?:string|null, pageUrl?:string|null, kind?:string|null}} p  folder: inside Downloads ('' = none)
  * @returns {Promise<number>} downloadId
  */
-export async function downloadBlob({ blobUrl, filename, blobJobId, hlsJobId, sourceUrl = null, pageUrl = null, kind = null }) {
-  const downloadId = await chrome.downloads.download({ url: blobUrl, filename, conflictAction: 'uniquify', saveAs: false });
+export async function downloadBlob({ blobUrl, filename, folder = '', blobJobId, hlsJobId, sourceUrl = null, pageUrl = null, kind = null }) {
+  const downloadId = await chrome.downloads.download({
+    url: blobUrl,
+    filename: inFolder(folder, filename),
+    conflictAction: 'uniquify',
+    saveAs: false,
+  });
   track(downloadId, { mode: 'blob', url: blobUrl, sourceUrl, pageUrl, kind, filename, ruleId: null, blobJobId, hlsJobId });
   return downloadId;
 }

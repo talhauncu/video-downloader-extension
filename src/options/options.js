@@ -1,4 +1,4 @@
-import { buildFilename, DEFAULT_TEMPLATE } from '../lib/filename.js';
+import { buildFilename, buildFolder, inFolder, DEFAULT_TEMPLATE } from '../lib/filename.js';
 import { t, initI18n, applyI18n } from '../lib/i18n.js';
 
 const fields = [
@@ -18,6 +18,9 @@ const fields = [
   'embedSubtitles',
   'audioLang',
   'uiLanguage',
+  'maxJobs',
+  'notify',
+  'subfolder',
 ];
 /** @type {Record<string, any>} */
 const el = Object.fromEntries(fields.map((f) => [f, document.getElementById(f)]));
@@ -52,17 +55,23 @@ function show(settings) {
   el.embedSubtitles.checked = settings.embedSubtitles;
   el.audioLang.value = settings.audioLang;
   el.uiLanguage.value = settings.uiLanguage;
+  el.maxJobs.value = settings.maxJobs;
+  el.notify.checked = settings.notify;
+  // Cleaned on save ("a / b/" → "a/b"); not while the user is typing in it.
+  if (document.activeElement !== el.subfolder) el.subfolder.value = settings.subfolder;
   preview();
 }
 
 function preview() {
-  previewEl.textContent = buildFilename({
-    pageUrl: 'https://www.ornek-site.com/video/123',
+  const pageUrl = 'https://www.ornek-site.com/video/123';
+  const name = buildFilename({
+    pageUrl,
     title: t('optPreviewTitle'),
     ext: 'mp4',
     quality: '1080p',
     template: el.filenameTemplate.value,
   });
+  previewEl.textContent = inFolder(buildFolder(el.subfolder.value, { pageUrl }), name);
 }
 
 function read() {
@@ -83,6 +92,9 @@ function read() {
     embedSubtitles: el.embedSubtitles.checked,
     audioLang: el.audioLang.value,
     uiLanguage: el.uiLanguage.value,
+    maxJobs: Number(el.maxJobs.value),
+    notify: el.notify.checked,
+    subfolder: el.subfolder.value,
   };
 }
 

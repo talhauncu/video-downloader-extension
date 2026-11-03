@@ -100,3 +100,43 @@ export function buildFilename({ pageUrl, title, ext, date, template, quality }) 
   if (base.length > room) base = truncate(base, room).replace(/[-. _]+$/, '');
   return `${base}${suffix}`;
 }
+
+// ---- download folder ------------------------------------------------------
+// A folder inside Downloads, from a template: "VideoDownloader/{site}" →
+// "VideoDownloader/x.com". Tokens: {site} {date}. chrome.downloads takes it
+// as part of the file name ("folder/name.mp4"); it refuses absolute paths
+// and "..", which are dropped here.
+
+export const FOLDER_TOKENS = ['site', 'date'];
+const MAX_FOLDER_SEGMENTS = 5;
+const MAX_FOLDER_SEGMENT = 60;
+
+/** Path segments of a folder template or folder: cleaned, without empty, "." and ".." parts. */
+function folderSegments(text) {
+  return String(text ?? '')
+    .split(/[\\/]+/)
+    .map((part) => truncate(sanitizePart(part), MAX_FOLDER_SEGMENT).replace(/[. ]+$/, ''))
+    .filter((part) => part && !/^\.+$/.test(part))
+    .slice(0, MAX_FOLDER_SEGMENTS);
+}
+
+/** The setting as stored: "Video Downloader / {site}/" → "Video Downloader/{site}". */
+export function normalizeFolderTemplate(text) {
+  return folderSegments(text).join('/');
+}
+
+/**
+ * @param {string} template  normalized folder template ('' = no folder)
+ * @param {{pageUrl?:string|null, date?:Date}} values
+ * @returns {string} folder path relative to Downloads ('' = none)
+ */
+export function buildFolder(template, { pageUrl = null, date = new Date() } = {}) {
+  if (!template) return '';
+  const values = { site: siteFromUrl(pageUrl ?? ''), date: timestamp(date).slice(0, 8) };
+  return folderSegments(template.replace(/\{(\w+)\}/g, (_, key) => values[key] ?? '')).join('/');
+}
+
+/** "folder/name.mp4", or the name alone without a folder. */
+export function inFolder(folder, filename) {
+  return folder ? `${folder}/${filename}` : filename;
+}

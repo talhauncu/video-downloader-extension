@@ -700,5 +700,47 @@
   },
   "optHistoryCleared": {
     "message": "History cleared"
+  },
+  "jobStateQueued": {
+    "message": "Queued"
+  },
+  "progressQueued": {
+    "message": "Queued"
+  },
+  "progressQueuedDetail": {
+    "message": "Starts when a running download ends"
+  },
+  "progressResumed": {
+    "message": "continued after $1 pieces"
+  },
+  "jobResumable": {
+    "message": "Download it again to continue where it stopped"
+  },
+  "notifyDoneTitle": {
+    "message": "Download complete"
+  },
+  "notifyErrorTitle": {
+    "message": "Download failed"
+  },
+  "notifyDoneHint": {
+    "message": "Click to show it in its folder"
+  },
+  "optMaxJobs": {
+    "message": "Downloads at once (HLS/DASH)"
+  },
+  "optMaxJobsHint": {
+    "message": "Further downloads wait in the queue (\"Queued\") and start when one ends. Plain video files are downloaded by Chrome itself and do not wait."
+  },
+  "optNotify": {
+    "message": "Notify when a download ends"
+  },
+  "optNotifyHint": {
+    "message": "A system notification when an HLS/DASH download is done or has failed; clicking it shows the file."
+  },
+  "optSubfolder": {
+    "message": "Folder inside Downloads"
+  },
+  "optSubfolderHint": {
+    "message": "Empty: Downloads itself. Fields: <code>{site}</code> <code>{date}</code>; <code>/</code> makes subfolders, e.g. <code>VideoDownloader/{site}</code>."
   }
 }

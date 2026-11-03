@@ -3,6 +3,14 @@
 All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow semver.
 
+## [0.12.0] - 2026-11-03
+
+### Added
+- Download queue: at most two HLS/DASH downloads run at once (setting "Downloads at once", 1–4); further ones wait as "Queued" in the popup and on the in-page button, can be cancelled while waiting, and start in turn.
+- Notifications: a system notification when a stream download is done (click it to show the file) or has failed (setting, on by default). Adds the `notifications` permission.
+- Folder inside Downloads: a template with `{site}` and `{date}` (e.g. `VideoDownloader/{site}`); empty by default.
+- A failed HLS (fMP4) or DASH download keeps what it downloaded until the browser closes: downloading the same video again continues after the pieces it has (finished tracks are not fetched again). TS streams start over.
+
 ## [0.11.0] - 2026-11-03
 
 ### Added

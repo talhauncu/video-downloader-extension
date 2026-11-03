@@ -103,8 +103,10 @@ export async function startServer({
   const limited = new Map(); // url -> 429s served so far
   let selfOrigin = null;
   const requested = []; // paths of rotating-directory playlists, in order (which audio a job fetched)
+  const log = []; // every request path, in order (which pieces a job fetched, and how often)
   const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
+    log.push(url.pathname);
     let file = resolveFile(url.pathname);
 
     // Optional Referer check, used by the "hotlink protected CDN" test:
@@ -309,6 +311,8 @@ export async function startServer({
     port: boundPort,
     /** Rotating-directory playlist paths requested so far. */
     rotRequests: () => [...requested],
+    /** Request paths so far (all of them, answered or not). */
+    requests: () => [...log],
     setMirrors(origins) {
       mirrors = origins;
     },
