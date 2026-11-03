@@ -29,6 +29,8 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
+      - name: Vendored files are the npm packages' files (SHA-256)
+        run: npm run check:vendor
 
   package:
     # Dry run of the release package: the zip builds and holds a loadable extension.
