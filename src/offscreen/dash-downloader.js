@@ -97,6 +97,11 @@ export class DashTrackDownload {
     this.abort.abort(abortError());
   }
 
+  /** Piece count, from the plan the service worker sent. */
+  async count() {
+    return this.plan.segments.length;
+  }
+
   async run() {
     const { init, segments } = this.plan;
     const total = segments.length;

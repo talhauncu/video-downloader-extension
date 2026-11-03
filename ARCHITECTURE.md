@@ -44,7 +44,9 @@ test/             unit tests (node:test), e2e tests (Playwright), fixtures (loca
   pool, written to OPFS in order and handed to `chrome.downloads` as a Blob at
   the end. It answers a job immediately (`{started: true}`) and reports
   progress and the result with `job:*` messages, so a restarted service worker
-  loses nothing.
+  loses nothing. A job's tracks (subtitles first, then video and audio) are
+  downloaded one after another; their piece counts are read before the first
+  one starts, so the reported total is fixed (`lib/track-progress.js`).
 - **Content scripts** (`src/content/`): `scanner.js` reports `<video>`,
   `<source>` and `<track>` elements (open shadow roots and iframes included);
   `badge.js` draws the in-page download button.
