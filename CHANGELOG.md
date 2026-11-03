@@ -3,6 +3,11 @@
 All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow semver.
 
+## [0.10.1] - 2026-11-03
+
+### Fixed
+- Downloads no longer fail with "Invalid filename" for titles with emoji sequences or invisible characters. File names drop what Chrome refuses: format characters (the zero-width joiner inside emoji like 👨‍👩‍👧, direction marks, BOM, soft hyphen), half of an emoji, non-characters, DEL/C1 controls and a leading tilde. Titles and file names are cut without splitting an emoji.
+
 ## [0.10.0] - 2026-11-03
 
 ### Added

@@ -4,15 +4,30 @@
 
 const MAX_LENGTH = 120;
 // eslint-disable-next-line no-control-regex -- control characters are exactly what is removed
-const ILLEGAL = /[\\/:*?"<>|\u0000-\u001f]/g;
+const ILLEGAL = /[\\/:*?"<>|\u0000-\u001f\u007f-\u009f]/g;
+// chrome.downloads refuses these ("Invalid filename"): format characters (zero-width
+// joiner in emoji sequences, direction marks, BOM, soft hyphen), unpaired UTF-16
+// halves and non-characters. They are invisible, so they are dropped, not spaced.
+const INVISIBLE = /[\p{Cf}\p{Cs}\p{Noncharacter_Code_Point}]/gu;
+
+/** At most `max` UTF-16 units, without splitting a surrogate pair (an emoji cut in half is refused). */
+export function truncate(text, max) {
+  const s = String(text ?? '');
+  if (s.length <= max) return s;
+  const cut = s.slice(0, Math.max(0, max));
+  return /[\uD800-\uDBFF]$/.test(cut) ? cut.slice(0, -1) : cut;
+}
 
 export const DEFAULT_TEMPLATE = '{site}-{title}-{date}';
 export const TOKENS = ['site', 'title', 'date', 'time', 'quality', 'id'];
 
 export function sanitizePart(text) {
   return String(text ?? '')
+    .replace(INVISIBLE, '')
     .replace(ILLEGAL, ' ')
     .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/^~+/, '') // a leading tilde is refused too
     .trim()
     .replace(/[. ]+$/, '');
 }
@@ -78,10 +93,10 @@ export function buildFilename({ pageUrl, title, ext, date, template, quality }) 
   if (base.length > room && values.title) {
     // Shorten the title first so date/site/quality survive.
     const overflow = base.length - room;
-    values.title = values.title.slice(0, Math.max(0, values.title.length - overflow)).replace(/[-. _]+$/, '');
+    values.title = truncate(values.title, values.title.length - overflow).replace(/[-. _]+$/, '');
     base = sanitizePart(applyTemplate(tpl, values));
   }
   if (!base) base = `video-${values.date}`;
-  if (base.length > room) base = base.slice(0, room).replace(/[-. _]+$/, '');
+  if (base.length > room) base = truncate(base, room).replace(/[-. _]+$/, '');
   return `${base}${suffix}`;
 }

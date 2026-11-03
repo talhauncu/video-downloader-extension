@@ -4,10 +4,11 @@
 // the DASH manifest. See main.js for the extractor.
 
 import { KIND } from '../../lib/media-url.js';
+import { truncate } from '../../lib/filename.js';
 
 const titleOf = (item) => {
   const text = (item.text ?? '').split('\n')[0].trim();
-  return [item.owner, text ? text.slice(0, 60) : null].filter(Boolean).join(' · ') || null;
+  return [item.owner, text ? truncate(text, 60) : null].filter(Boolean).join(' · ') || null;
 };
 
 /** @type {import('../index.js').SiteDefinition} */
