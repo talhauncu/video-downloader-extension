@@ -168,6 +168,19 @@ function onFrameRequest(details) {
   }
 }
 
+/**
+ * The tab's page can change without a page request in the tab: a page restored
+ * from the back/forward cache, a prerendered search result, a single-page app
+ * moving to another address. Follow the tab's URL so new entries (and their
+ * file names and Referer) name the page that is really open. The list is not
+ * cleared here: single-page apps change the URL on every in-app navigation.
+ */
+function onTabUpdated(tabId, changeInfo) {
+  if (!changeInfo.url) return;
+  pageUrlByTab.set(tabId, changeInfo.url);
+  frameUrls.set(frameKey(tabId, 0), changeInfo.url);
+}
+
 function onTabRemoved(tabId) {
   pageUrlByTab.delete(tabId);
   for (const key of [...frameUrls.keys()]) if (key.startsWith(`${tabId}:`)) frameUrls.delete(key);
@@ -181,6 +194,7 @@ export function startCapture() {
     types: ['main_frame', 'sub_frame'],
   });
   chrome.tabs.onRemoved.addListener(onTabRemoved);
+  chrome.tabs.onUpdated.addListener(onTabUpdated);
 }
 
 export function pageUrlOf(tabId) {

@@ -306,7 +306,8 @@ const handlers = {
     const tabId = sender?.tab?.id;
     const site = siteById(siteId);
     if (tabId == null || tabId < 0 || !site) return { accepted: 0 };
-    const page = pageUrlOf(tabId) ?? sender.tab.url ?? pageUrl ?? null;
+    // The reporting tab's own URL: the recorded page can lag behind (back/forward cache, prerender).
+    const page = sender.tab.url ?? pageUrlOf(tabId) ?? pageUrl ?? null;
     let changed = false;
     for (const { entry, sizeFrom, describe } of site.toItems({ items }, { pageUrl: page })) {
       const result = await store.upsert(tabId, entry);
@@ -326,7 +327,7 @@ const handlers = {
   'dom:media': async ({ items = [], page = /** @type {any} */ ({}) }, sender) => {
     const tabId = sender?.tab?.id;
     if (tabId == null || tabId < 0) return { accepted: 0 };
-    const pageUrl = pageUrlOf(tabId) ?? sender.tab.url ?? page.url ?? null;
+    const pageUrl = sender.tab.url ?? pageUrlOf(tabId) ?? page.url ?? null;
     let changed = false;
     for (const item of items) {
       if (!item?.url || !item.kind) continue;

@@ -10,10 +10,11 @@ import os from 'node:os';
 export const EXTENSION_PATH = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
 /**
- * @param {{headless?:boolean, uiLanguage?:'tr'|'en'}} [opts]  uiLanguage: the tests check Turkish texts
- *   by default; the browser's own language differs between machines (en in Playwright's Chromium).
+ * @param {{headless?:boolean, uiLanguage?:'tr'|'en', backForwardCache?:boolean}} [opts]  uiLanguage: the tests check
+ *   Turkish texts by default; the browser's own language differs between machines (en in Playwright's Chromium).
+ *   backForwardCache: Playwright turns the back/forward cache off; on for tests of pages restored from it.
  */
-export async function launchWithExtension({ headless = true, uiLanguage = 'tr' } = {}) {
+export async function launchWithExtension({ headless = true, uiLanguage = 'tr', backForwardCache = false } = {}) {
   const userDataDir = await mkdtemp(path.join(os.tmpdir(), 'vdl-profile-'));
   const downloadsPath = await mkdtemp(path.join(os.tmpdir(), 'vdl-downloads-'));
 
@@ -24,6 +25,7 @@ export async function launchWithExtension({ headless = true, uiLanguage = 'tr' }
     acceptDownloads: true,
     downloadsPath,
     args: [`--disable-extensions-except=${EXTENSION_PATH}`, `--load-extension=${EXTENSION_PATH}`],
+    ...(backForwardCache ? { ignoreDefaultArgs: ['--disable-back-forward-cache'] } : {}),
   });
 
   // The service worker is the reliable place to read the extension id from.

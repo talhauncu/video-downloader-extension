@@ -111,5 +111,13 @@
   // Periodic rescan catches players inside shadow roots we cannot observe.
   setInterval(scheduleScan, 3000);
 
+  // Back from the back/forward cache: the tab's list was cleared when the page
+  // was left, and nothing reloads. Report everything again.
+  window.addEventListener('pageshow', (event) => {
+    if (!event.persisted) return;
+    lastReport = null;
+    scanNow();
+  });
+
   scanNow();
 })();
