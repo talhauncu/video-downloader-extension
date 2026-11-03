@@ -218,3 +218,24 @@ test('X: the post id decides on a status page without a trailing slash; a GIF re
   const g = resolveVideo(items, { src: gif.url }, { tabUrl: TAB });
   assert.deepEqual([g.item.id, g.title], [gif.id, '@gif post']);
 });
+
+test('a player without a URL (srcObject, "mse:") resolves through the post code like a blob: player', () => {
+  const TAB = 'https://www.facebook.com/';
+  const a = it({
+    kind: 'dash',
+    site: 'facebook',
+    code: '1000000000000501',
+    url: 'https://www.facebook.com/watch/?v=1000000000000501#dash',
+    stream: { type: 'dash', videos: [], audios: [] },
+  });
+  const b = it({
+    kind: 'dash',
+    site: 'facebook',
+    code: '1000000000000502',
+    url: 'https://www.facebook.com/watch/?v=1000000000000502#dash',
+    stream: { type: 'dash', videos: [], audios: [] },
+  });
+  assert.equal(resolveVideo([a, b], { src: 'mse:', postCode: '1000000000000502' }, { tabUrl: TAB }).item.id, b.id);
+  assert.equal(resolveVideo([a, b], { src: 'mse:' }, { tabUrl: TAB }).status, 'unmatched');
+  assert.equal(resolveVideo([a, b], { src: '' }, { tabUrl: TAB }).reason, 'no-source');
+});

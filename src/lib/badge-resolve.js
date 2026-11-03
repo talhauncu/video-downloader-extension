@@ -108,7 +108,8 @@ export function resolveVideo(
   const cards = [...o.recommended, ...o.others];
   let card;
 
-  if (src.startsWith('blob:')) {
+  // A player stream: blob: URL, or "mse:" for one fed through srcObject (no URL to match).
+  if (src.startsWith('blob:') || src === 'mse:') {
     card = cards.find((c) => c.merged.some((b) => b.url === src)) ?? null;
     if (!card && items.some((it) => it.site)) {
       const site = siteCardFor(cards, video, tabUrl);

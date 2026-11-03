@@ -323,14 +323,16 @@
   }
 
   function describeVideo(video) {
-    const src = video.currentSrc || video.src || video.querySelector('source')?.src || '';
+    // A player fed through srcObject (a MediaSource made in a worker, as on
+    // Facebook) has no URL at all: it is named "mse:" and matched like a blob: player.
+    const src = video.currentSrc || video.src || video.querySelector('source')?.src || (video.srcObject ? 'mse:' : '');
     return {
       src,
       width: video.videoWidth || null,
       height: video.videoHeight || null,
       duration: Number.isFinite(video.duration) && video.duration > 0 ? Math.round(video.duration) : null,
       frameUrl: location.href,
-      postCode: src.startsWith('blob:') ? postCodeFor(video) : null,
+      postCode: src.startsWith('blob:') || src === 'mse:' ? postCodeFor(video) : null,
     };
   }
 

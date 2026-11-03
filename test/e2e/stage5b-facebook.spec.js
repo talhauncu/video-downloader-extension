@@ -58,13 +58,15 @@ test('a watch page: one entry per video, the open one first; player tracks and a
   await expect(main.locator('.name')).toHaveText('Bir Sayfa · İlk video');
   // The other three videos are neighbours; the reel shows its MP4, not its manifest.
   await expect(popup.locator('#others-list > .item[data-reason="neighbour"]')).toHaveCount(3);
-  await expect(popup.locator('#others-list > .item[data-site="facebook"][data-kind="dash"] .name')).toHaveText(
-    'Manifest Sayfası · Yalnızca manifest',
-  );
+  await expect(popup.locator('#others-list > .item[data-site="facebook"][data-kind="dash"] .name')).toHaveText('Manifest Sayfası');
   await expect(popup.locator('.item[data-hidden="true"]')).toHaveCount(0);
   const items = await stored(tabId);
   expect(items.find((it) => it.key === `facebook:${ID(3)}`).url).toBe(`${server.url}/media/dash-base/DASH_360.mp4?fb=hd`);
   expect(items.filter((it) => it.hidden).length).toBe(1); // the player's efg-tagged track
+  // Files below the video object take its id, length and owner (Reels: no post text, the owner names it).
+  const reel = items.find((it) => it.key === `facebook:${ID(3)}`);
+  expect([reel.duration, reel.title, reel.width]).toEqual([4, 'Reels Hesabı', 640]);
+  expect(items.find((it) => it.key === `facebook:${ID(4)}:dash`).duration).toBe(4);
 
   const before = await ext.existingDownloadIds();
   await main.locator('.download').click();
@@ -103,7 +105,10 @@ test("a feed: each player's button downloads the video its link names; a manifes
     expect((await readFile(done.filename)).equals(await readFile(path.join(MEDIA, file))), `${id} → ${file}`).toBe(true);
     await away();
   }
-  // /watch/?v=<id>&ref=feed: only a manifest, so video and audio are downloaded and merged.
+  // /watch/?v=<id>&ref=feed: a player fed through srcObject (no URL, like Facebook's),
+  // and only a manifest, so video and audio are downloaded and merged.
+  await expect(page.locator('body')).toHaveAttribute('data-worker-player', 'true');
+  expect(await page.locator(`video[data-id="${ID(4)}"]`).evaluate((v) => [v.currentSrc, Boolean(v.srcObject)])).toEqual(['', true]);
   await hoverPost(ID(4));
   const before = await ext.existingDownloadIds();
   await badge.click();

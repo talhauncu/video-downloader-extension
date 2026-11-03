@@ -66,26 +66,34 @@
     const sd = absolute(node.browser_native_sd_url ?? node.playable_url);
     const manifest = [node.dash_manifest, node.dash_manifests?.[0]?.manifest_xml].find(isManifest) ?? null;
     if (!hd && !sd && !manifest) return null;
-    // A video has an id; a URL alone (a thumbnail's data, a nested manifest) is not one.
-    const id = node.videoId ?? node.video_id ?? node.id;
+    // The files often sit below the video object (videoDeliveryLegacyFields,
+    // videoDeliveryResponseFragment…): its id, length and owner come from there.
+    const own = node.videoId ?? node.video_id ?? node.id;
+    const video = ctx.video && (own == null || String(own) === ctx.video.id) ? ctx.video : null;
+    // A video has an id; a URL alone (a thumbnail's data) is not one.
+    const id = own ?? video?.id;
     if (id == null) return null;
+    return {
+      id: String(id),
+      hd,
+      sd,
+      dashManifest: manifest,
+      duration: durationOf(node) ?? video?.duration ?? null,
+      width: node.width ?? node.original_width ?? video?.width ?? null,
+      height: node.height ?? node.original_height ?? video?.height ?? null,
+      owner: node.owner?.name ?? video?.owner ?? ctx.owner ?? null,
+      text: node.title?.text ?? node.message?.text ?? video?.text ?? ctx.text ?? null,
+    };
+  }
+
+  function durationOf(node) {
     const seconds =
       typeof node.playable_duration_in_ms === 'number'
         ? node.playable_duration_in_ms / 1000
         : typeof node.length_in_second === 'number'
           ? node.length_in_second
           : null;
-    return {
-      id: String(id),
-      hd,
-      sd,
-      dashManifest: manifest,
-      duration: seconds ? Math.round(seconds) : null,
-      width: node.width ?? node.original_width ?? null,
-      height: node.height ?? node.original_height ?? null,
-      owner: node.owner?.name ?? ctx.owner ?? null,
-      text: node.title?.text ?? node.message?.text ?? ctx.text ?? null,
-    };
+    return seconds ? Math.round(seconds) : null;
   }
 
   function walk(node, out, ctx, depth = 0) {
@@ -97,6 +105,20 @@
     // A post: its text and author apply to the video below it.
     if (typeof node.message?.text === 'string') ctx = { ...ctx, text: node.message.text };
     if (typeof node.actors?.[0]?.name === 'string') ctx = { ...ctx, owner: node.actors[0].name };
+    // A video object (Reels, Watch: __typename Video, with its length): what lies below it belongs to it.
+    if (node.id != null && (node.__typename === 'Video' || durationOf(node) != null)) {
+      ctx = {
+        ...ctx,
+        video: {
+          id: String(node.id),
+          duration: durationOf(node),
+          width: node.width ?? null,
+          height: node.height ?? null,
+          owner: node.owner?.name ?? null,
+          text: node.title?.text ?? null,
+        },
+      };
+    }
     if (FIELDS.some((f) => typeof node[f] === 'string') || Array.isArray(node.dash_manifests)) {
       const item = pick(node, ctx);
       if (item) out.push(item);

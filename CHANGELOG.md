@@ -6,8 +6,9 @@ All notable changes to this project are documented here. The format follows
 ## [0.10.0] - 2026-11-03
 
 ### Added
-- Facebook extractor: Reels, Watch and videos in posts become one entry each, from the video data in the page's inline JSON and GraphQL responses: the HD (else SD) MP4 with video and audio, or the DASH manifest (downloaded and merged) when there is no MP4. Titled with the owner and the first line of the post. The player's own fbcdn tracks stay hidden; a manifest entry hides behind the video's MP4 once that arrives.
+- Facebook extractor: Reels, Watch and videos in posts become one entry each, from the video data in the page's inline JSON and GraphQL responses: the HD (else SD) MP4 with video and audio, or the DASH manifest (downloaded and merged) when there is no MP4. Titled with the owner and the first line of the post (Reels: the owner). Files nested below the video object take its id, length and owner. The player's own fbcdn tracks stay hidden; a manifest entry hides behind the video's MP4 once that arrives.
 - The in-page button reads Facebook links as post codes (`/watch/?v=ID`, `/<page>/videos/ID`, `/reel/ID`); "this page" also matches the `?v=` query.
+- The in-page button also appears on players without a URL: Facebook attaches its MediaSource from a worker (`srcObject`); such a player is matched through its post code like a `blob:` one.
 
 ### Fixed
 - A hidden entry no longer stands for the open page: the page's real entry was listed as a neighbour.
