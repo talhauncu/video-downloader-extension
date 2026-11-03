@@ -46,7 +46,8 @@ async function runDownload(popup, { pickOption } = {}) {
 
 test('offscreen document loads mux.js', async () => {
   const pong = await ext.offscreen('ping');
-  expect(pong).toEqual({ pong: true, mux: true });
+  // Cross-origin isolated (manifest COOP/COEP): the multi-threaded ffmpeg core needs it.
+  expect(pong).toEqual({ pong: true, mux: true, isolated: true });
 });
 
 test('fMP4 master playlist: quality selector, chosen variant downloaded byte-for-byte', async () => {

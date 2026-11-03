@@ -3,6 +3,17 @@
 All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow semver.
 
+## [0.13.0] - 2026-11-03
+
+### Added
+- Faster H.264 conversion: ffmpeg.wasm's multi-threaded core (`@ffmpeg/core-mt` 0.12.10) converts videos up to 256 MB about three times faster (20 s of 720p VP9: 17.7 s → 5.5 s). Larger videos, merges, and conversions the multi-threaded core fails on use the single-threaded core as before. The release package grows by about 10 MB.
+- With "Convert to H.264" on, plain video files are converted too: the extension downloads them itself instead of Chrome (in 4 MB pieces, with the stream downloads' progress, queue, retries and resume) and converts them when they are not H.264. H.264 files are saved unchanged.
+- With "Embed subtitles" on, a plain video file and the page's subtitles chosen with it become one MP4.
+
+### Changed
+- The extension's pages are cross-origin isolated (manifest `cross_origin_opener_policy` / `cross_origin_embedder_policy`), which the multi-threaded core needs.
+- A conversion with nothing to do (the video is already H.264, nothing to merge or embed) no longer copies the file through ffmpeg.
+
 ## [0.12.0] - 2026-11-03
 
 ### Added

@@ -138,6 +138,15 @@ and the keyboard shortcut all use it.
   about two minutes. Junk bytes some hosts put in front of segments are trimmed
   (`stripJunk`). Errors name their step ("Piece 3/841 could not be fetched (HTTP 404)").
 - **Live streams** (no `ENDLIST`), SAMPLE-AES and DRM are refused.
+- **Plain files through the extension** (`startFileJob`, `file-plan.js`): with
+  "convert to H.264" on, or with subtitles to embed, a plain video file is not
+  handed to `chrome.downloads` but downloaded like a stream, so ffmpeg can work
+  on it. The service worker asks for one byte (`Range: bytes=0-0`) with the
+  frame's headers to learn the size, and sends a `file` track of 4 MB byte
+  ranges; the offscreen document fetches it with the DASH downloader (no junk
+  trimming). It is a stream job like any other: queue, progress, retries,
+  resume. A server without ranges gives one piece. An H.264 file with nothing
+  to embed is saved unchanged.
 
 ### Queue, notifications, resume
 
@@ -173,15 +182,30 @@ and the keyboard shortcut all use it.
 ## ffmpeg.wasm
 
 `src/vendor/ffmpeg/`: `@ffmpeg/ffmpeg` 0.12.15 and the single-threaded
-`@ffmpeg/core` 0.12.10 (31 MB wasm, CSP `'wasm-unsafe-eval'`). It runs as a
-module worker inside the offscreen document and is loaded on first use. Inputs
-are mounted with WORKERFS (no copy), the output is read from MEMFS. It merges
-separate video and audio (`-c copy`, `mergeTracks`), optionally converts
-non-H.264 video to H.264 (`transcodeToH264`), and embeds subtitles as
+`@ffmpeg/core` 0.12.10 (31 MB wasm, CSP `'wasm-unsafe-eval'`);
+`src/vendor/ffmpeg-mt/`: the multi-threaded `@ffmpeg/core-mt` 0.12.10. ffmpeg
+runs as a module worker inside the offscreen document and is loaded on first
+use. Inputs are mounted with WORKERFS (no copy), the output is read from MEMFS.
+It merges separate video and audio (`-c copy`, `mergeTracks`), optionally
+converts non-H.264 video to H.264 (`transcodeToH264`), and embeds subtitles as
 `mov_text` tracks (`embedSubtitles`); arguments come from `ffmpeg-args.js`. If
-ffmpeg fails, the tracks are saved separately with a warning. The
-multi-threaded core was not used: its COOP/COEP requirements could affect the
-offscreen document's cross-origin segment fetches.
+ffmpeg fails, the tracks are saved separately with a warning.
+
+Two cores (`ffmpeg-runner.js`, `pickCore`):
+
+- The **multi-threaded core** needs `SharedArrayBuffer`, so the manifest makes
+  the extension's pages cross-origin isolated (`cross_origin_opener_policy`
+  `same-origin`, `cross_origin_embedder_policy` `require-corp`). The offscreen
+  document's cross-origin fetches are not affected: they run under the host
+  permissions. It converts to H.264 about 3× faster (20 s of 720p VP9: 17.7 s
+  → 5.5 s). Its memory is a fixed 1 GB and the output lives in it, so it only
+  takes conversions whose inputs are at most 256 MB (`MT_INPUT_LIMIT`). x264
+  gets `-threads` (at most 4, `mtThreads`): left to itself it never finishes
+  on this core, and with 6 or more threads the document crashed. It is loaded
+  for each job and terminated afterwards to give the memory back.
+- The **single-threaded core** (memory grows up to 2 GB) does every merge and
+  larger conversions, and runs a conversion again when the multi-threaded
+  core fails. The job's file records which core ran (`files[].ffmpeg`).
 
 The vendored files are copies of the npm packages' files, unchanged.
 `npm run check:vendor` (CI, lint job) compares each one with its source in

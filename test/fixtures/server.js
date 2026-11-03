@@ -104,6 +104,9 @@ export async function startServer({
   let selfOrigin = null;
   const requested = []; // paths of rotating-directory playlists, in order (which audio a job fetched)
   const log = []; // every request path, in order (which pieces a job fetched, and how often)
+  const rangeLog = []; // "<path> <Range header>" of every range request (which byte ranges a job fetched)
+  // rangeFail: { re, from } → range requests for matching paths that start at or after `from` answer 404
+  let rangeFail = null;
   const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
     log.push(url.pathname);
@@ -246,6 +249,11 @@ export async function startServer({
       rangeHeader = `bytes=${url.searchParams.get('bytestart')}-${url.searchParams.get('byteend') ?? ''}`;
     }
     const range = rangeHeader && /^bytes=(\d*)-(\d*)$/.exec(rangeHeader);
+    if (range) rangeLog.push(`${url.pathname} ${rangeHeader}`);
+    if (range && rangeFail?.re.test(url.pathname) && Number(range[1] || 0) >= rangeFail.from) {
+      res.writeHead(404, { 'content-type': 'text/plain' });
+      return res.end('Not found (range)');
+    }
     if (range) {
       const start = range[1] ? Number(range[1]) : 0;
       const end = range[2] ? Math.min(Number(range[2]), stat.size - 1) : stat.size - 1;
@@ -315,6 +323,12 @@ export async function startServer({
     requests: () => [...log],
     setMirrors(origins) {
       mirrors = origins;
+    },
+    /** "<path> <Range>" of the range requests so far. */
+    rangeRequests: () => [...rangeLog],
+    /** Range requests for matching paths (regex source) starting at or after `from` answer 404; null turns it off. */
+    setRangeFail(source, from = 0) {
+      rangeFail = source ? { re: new RegExp(source), from } : null;
     },
     /** Turns the always-404 rule on (regex source) or off (null) while running. */
     setAlways404(source) {

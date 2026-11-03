@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mergeArgs } from '../../src/lib/ffmpeg-args.js';
+import { mergeArgs, pickCore, mtThreads, MT_INPUT_LIMIT } from '../../src/lib/ffmpeg-args.js';
 
 test('mergeArgs: video + audio maps both and keeps -shortest', () => {
   assert.deepEqual(mergeArgs({ audio: true, subtitles: [], transcode: false, audioCodec: 'aac' }), [
@@ -79,4 +79,38 @@ test('mergeArgs: subtitles become mov_text tracks with language and title, no -s
 test('mergeArgs: separate audio shifts subtitle inputs by one', () => {
   const args = mergeArgs({ audio: true, subtitles: [{ language: 'tur' }], transcode: false, audioCodec: 'aac' });
   assert.deepEqual(args.slice(0, 6), ['-map', '0:v:0', '-map', '1:a:0', '-map', '2:0']);
+});
+
+test('mergeArgs: encoder threads only when given (the multi-threaded core)', () => {
+  const args = mergeArgs({ audio: false, subtitles: [], transcode: true, audioCodec: 'aac', threads: 4 });
+  assert.deepEqual(args.slice(args.indexOf('libx264') - 1, args.indexOf('-c:a')), [
+    '-c:v',
+    'libx264',
+    '-preset',
+    'veryfast',
+    '-crf',
+    '23',
+    '-pix_fmt',
+    'yuv420p',
+    '-threads',
+    '4',
+  ]);
+  assert.ok(!mergeArgs({ audio: true, subtitles: [], transcode: false, audioCodec: 'aac', threads: 4 }).includes('-threads'));
+});
+
+test('mtThreads: at most 4, at least 1', () => {
+  assert.equal(mtThreads(8), 4);
+  assert.equal(mtThreads(2), 2);
+  assert.equal(mtThreads(undefined), 4);
+  assert.equal(mtThreads(0), 4);
+});
+
+test('pickCore: the multi-threaded core only transcodes inputs that fit, when isolated', () => {
+  const base = { transcode: true, isolated: true, inputBytes: 10 };
+  assert.equal(pickCore(base), 'mt');
+  assert.equal(pickCore({ ...base, inputBytes: MT_INPUT_LIMIT }), 'mt');
+  assert.equal(pickCore({ ...base, inputBytes: MT_INPUT_LIMIT + 1 }), 'single');
+  assert.equal(pickCore({ ...base, transcode: false }), 'single'); // merging is a copy: the single core is enough
+  assert.equal(pickCore({ ...base, isolated: false }), 'single');
+  assert.equal(pickCore({ ...base, mode: 'single' }), 'single');
 });

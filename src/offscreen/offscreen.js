@@ -90,7 +90,8 @@ async function fetchToBlob({ jobId, url }) {
 /**
  * A stream job downloads one or more tracks (subtitles, video, audio)
  * sequentially and reports aggregated progress. Each track is an HLS
- * playlist URL, a DASH segment plan or a subtitle source. Subtitles go
+ * playlist URL, a DASH segment plan, a plain file's byte ranges or a
+ * subtitle source. Subtitles go
  * first (small, and their signed URLs are freshest) and may fail without
  * failing the job. Every track's piece count is read before the first
  * download, so the reported total is fixed from the start.
@@ -184,6 +185,11 @@ class StreamJob {
       cooldownSchedule: this.cooldownSchedule,
       fallbackDelays: this.fallbackDelays,
     };
+    // A plain file: byte ranges of one URL, fetched like a SegmentBase track
+    // (no junk trimming: a range starts anywhere inside the file).
+    if (track.type === 'file') {
+      return new DashTrackDownload({ ...common, stripJunk: false, plan: { init: null, segments: track.segments }, ext: track.ext });
+    }
     return track.type === 'dash'
       ? new DashTrackDownload({
           ...common,
@@ -318,6 +324,7 @@ class StreamJob {
         : [],
       transcode: Boolean(wantsTranscode),
       onProgress: (progress) => notify('job:phase', { jobId: this.jobId, phase: 'merging', progress }),
+      coreMode: this.postProcess.ffmpegCore ?? 'auto',
     });
     if (!result.transcoded && !wantsMerge && !wantsEmbed) return null; // nothing changed (already H.264, no audio to merge)
 
@@ -340,6 +347,7 @@ class StreamJob {
       remuxed: true,
       transcoded: result.transcoded,
       codecs: result.codecs,
+      ffmpeg: { core: result.core, threads: result.threads, ms: result.ms, fellBack: result.fellBack },
       embeddedSubtitles: wantsEmbed ? subs.map((s) => s.lang ?? s.label ?? '?') : [],
       // Keep the tracks' resilience counters on the merged file.
       retries: media.reduce((s, c) => s + (c.retries ?? 0), 0),
@@ -439,6 +447,7 @@ function runJob(job) {
           spacingMs: c.spacingMs ?? 0,
           transcoded: c.transcoded ?? false,
           codecs: c.codecs ?? null,
+          ffmpeg: c.ffmpeg ?? null,
           ...(c.role === 'subtitle' ? { lang: c.lang ?? null, label: c.label ?? null } : {}),
           ...(c.embeddedSubtitles?.length ? { embeddedSubtitles: c.embeddedSubtitles } : {}),
           blobUrl: registerBlob(`${jobId}:${index}:${c.role}`, c.file, c.fileName, mimeFor(ext)),
@@ -513,7 +522,11 @@ const jobs = {
     const blob = await (await fetch(blobUrl)).blob();
     return probe(blob);
   },
-  ping: async () => ({ pong: true, mux: typeof globalThis.muxjs?.Transmuxer === 'function' }),
+  ping: async () => ({
+    pong: true,
+    mux: typeof globalThis.muxjs?.Transmuxer === 'function',
+    isolated: Boolean(globalThis.crossOriginIsolated),
+  }),
 };
 
 // No chrome.i18n in an offscreen document: the service worker hands over the
