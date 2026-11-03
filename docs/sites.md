@@ -2,7 +2,7 @@
 
 Most sites need nothing special: the extension sees their MP4s, playlists and
 manifests on the network. A **site extractor** is for sites whose player hides
-the useful file: Instagram and X stream separate tracks, while the page's own
+the useful file: Instagram, X and Facebook stream separate tracks, while the page's own
 data holds complete MP4s with audio. Prefer a general fix (capture, matching,
 resilience) when one exists; write an extractor when the right file is only
 in the page.
@@ -77,8 +77,10 @@ chunks of the same video are hidden behind them (`chunkOf`, or Instagram's
 `hidden` track tags), a captured copy of the entry's own file is hidden too,
 and the in-page badge matches feed videos to them by `code` (a post's
 shortcode or id, read from links like `/p/CODE/` or `/user/status/ID` around
-the video) or duration. A new link shape goes into `POST_LINK` in
-`src/content/badge.js`.
+the video) or duration. A new link shape goes into `POST_LINKS` in
+`src/content/badge.js`. An entry may itself set `coveredBy` (Facebook's
+manifest-only entry names the MP4 entry of the same video): it hides once
+that entry exists.
 
 ## 2. The extractor
 

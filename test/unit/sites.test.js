@@ -4,6 +4,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { SITES, BRIDGE_SCRIPT, siteById, siteForUrl, siteChunkKey, validateSite, validateSites } from '../../src/sites/index.js';
 import instagram, { pickBestVersion } from '../../src/sites/instagram/site.js';
 import twitter, { pickBestVariant, sizeFromUrl } from '../../src/sites/twitter/site.js';
+import facebook from '../../src/sites/facebook/site.js';
 
 const ROOT = new URL('../../', import.meta.url);
 const valid = () => ({
@@ -139,4 +140,38 @@ test('siteChunkKey: X player chunks name their media; other URLs belong to no en
   assert.equal(siteForUrl('https://x.com/someone/status/9001')?.id, 'twitter');
   assert.equal(siteForUrl('https://mobile.twitter.com/home')?.id, 'twitter');
   assert.ok(validateSite({ ...valid(), chunkOf: 'no' }).some((e) => e.includes('chunkOf')));
+});
+
+test('facebook.toItems: HD, else SD, else the DASH manifest (covered by the MP4 entry once it exists)', () => {
+  const out = facebook.toItems(
+    {
+      items: [
+        {
+          id: '501',
+          hd: 'https://video.fbcdn.test/hd.mp4',
+          sd: 'https://video.fbcdn.test/sd.mp4',
+          owner: 'Bir Sayfa',
+          text: 'İlk satır\nikinci',
+          duration: 30,
+        },
+        { id: '502', sd: 'https://video.fbcdn.test/sd2.mp4' },
+        { id: '503', dashManifest: '<MPD/>', owner: 'Reels' },
+        { id: '504' },
+      ],
+    },
+    { pageUrl: 'https://www.facebook.com/watch/?v=501' },
+  );
+  assert.equal(out.length, 3);
+  assert.deepEqual(
+    [out[0].entry.key, out[0].entry.url, out[0].entry.kind, out[0].entry.code, out[0].entry.title, out[0].sizeFrom],
+    ['facebook:501', 'https://video.fbcdn.test/hd.mp4', 'video', '501', 'Bir Sayfa · İlk satır', 'https://video.fbcdn.test/hd.mp4'],
+  );
+  assert.equal(out[1].entry.url, 'https://video.fbcdn.test/sd2.mp4');
+  assert.equal(out[1].entry.title, null);
+  assert.deepEqual(
+    [out[2].entry.key, out[2].entry.kind, out[2].entry.manifestText, out[2].entry.coveredBy, out[2].describe],
+    ['facebook:503:dash', 'dash', '<MPD/>', 'facebook:503', true],
+  );
+  assert.equal(siteForUrl('https://www.facebook.com/reel/123456789')?.id, 'facebook');
+  assert.equal(siteForUrl('https://m.facebook.com/watch/?v=1')?.id, 'facebook');
 });

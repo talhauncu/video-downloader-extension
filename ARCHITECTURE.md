@@ -60,7 +60,7 @@ test/             unit tests (node:test), e2e tests (Playwright), fixtures (loca
   them. A definition may also name the entry a captured player chunk belongs
   to (`chunkOf`): the list then hides that chunk behind the entry (X's HLS
   pieces), and a captured copy of a site entry's own file is hidden too. Sites:
-  Instagram, X. How to add a site:
+  Instagram, X, Facebook. How to add a site:
   [docs/sites.md](docs/sites.md).
 - **Pure modules** (`src/lib/`): everything that can be tested in Node lives
   here: the HLS and DASH parsers (`m3u8.js`, `mpd.js` on a tiny XML parser,
@@ -186,9 +186,9 @@ to load the extension (a unit test checks).
 root, `position: fixed` with the highest z-index, following the video with
 `getBoundingClientRect`. Pointer tracking is window-wide (players' overlays
 swallow events). The service worker resolves the video to an entry
-(`badge:resolve`, same ranking as the popup); feed videos of Instagram and X
-match by the post's code (`/p/CODE/`, `/user/status/ID`) read from the links
-around them. Progress is polled (`badge:progress`), downloads can be
+(`badge:resolve`, same ranking as the popup); feed videos of Instagram, X and
+Facebook match by the post's code read from the links around them
+(`/p/CODE/`, `/user/status/ID`, `/watch/?v=ID`, `/videos/ID`; `POST_LINKS`). Progress is polled (`badge:progress`), downloads can be
 cancelled (two clicks), and jobs are found again after a reload by entry id,
 key and URL path.
 

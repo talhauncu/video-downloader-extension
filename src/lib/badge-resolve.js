@@ -58,8 +58,20 @@ function notesFor(item) {
   return '';
 }
 
+/** Length of an entry: its own, else its described stream's (Facebook manifests). */
+const durationOf = (item) => item.duration ?? item.stream?.duration ?? null;
+
+const SHAPE_TOLERANCE = 0.05;
+/** True when both sizes are known and have the same aspect ratio (a stream may be scaled down). */
+function sameShape(item, video) {
+  if (!item.width || !item.height || !video.width || !video.height) return false;
+  const a = item.width / item.height;
+  const b = video.width / video.height;
+  return Math.abs(a - b) / Math.max(a, b) <= SHAPE_TOLERANCE;
+}
+
 /**
- * Site players (Instagram, X) stream through MSE without a playlist; their
+ * Site players (Instagram, X, Facebook) stream through MSE without a playlist; their
  * complete files are the site entries. The post's shortcode, read from the
  * page around the <video>, identifies the entry exactly. Without a code a
  * single duration match is accepted, and the open page's entry when the URL
@@ -74,11 +86,15 @@ export function siteCardFor(cards, video, tabUrl = '') {
     if (exact) return { card: exact };
   }
   if (video.duration) {
-    const byDuration = siteCards.filter((c) => durationsMatch(c.item.duration, video.duration));
+    const byDuration = siteCards.filter((c) => durationsMatch(durationOf(c.item), video.duration));
     if (byDuration.length === 1) return { card: byDuration[0] };
+    // Same length (feeds of short clips): the frame's shape — portrait, landscape, square — may tell them apart.
+    const shaped = byDuration.filter((c) => sameShape(c.item, video));
+    if (shaped.length === 1) return { card: shaped[0] };
   }
   const onPage = siteCards.find((c) => urlNamesCode(tabUrl, c.item.code));
-  if (onPage && (!video.duration || !onPage.item.duration || durationsMatch(onPage.item.duration, video.duration))) return { card: onPage };
+  const pageLength = onPage ? durationOf(onPage.item) : null;
+  if (onPage && (!video.duration || !pageLength || durationsMatch(pageLength, video.duration))) return { card: onPage };
   // A post we can name but whose data has not arrived: wait instead of guessing.
   if (video.postCode)
     return {
@@ -108,7 +124,8 @@ export function resolveVideo(
   const cards = [...o.recommended, ...o.others];
   let card;
 
-  if (src.startsWith('blob:')) {
+  // A player stream: blob: URL, or "mse:" for one fed through srcObject (no URL to match).
+  if (src.startsWith('blob:') || src === 'mse:') {
     card = cards.find((c) => c.merged.some((b) => b.url === src)) ?? null;
     if (!card && items.some((it) => it.site)) {
       const site = siteCardFor(cards, video, tabUrl);

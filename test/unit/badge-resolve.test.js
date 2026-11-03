@@ -218,3 +218,40 @@ test('X: the post id decides on a status page without a trailing slash; a GIF re
   const g = resolveVideo(items, { src: gif.url }, { tabUrl: TAB });
   assert.deepEqual([g.item.id, g.title], [gif.id, '@gif post']);
 });
+
+test('a player without a URL (srcObject, "mse:") resolves through the post code like a blob: player', () => {
+  const TAB = 'https://www.facebook.com/';
+  const a = it({
+    kind: 'dash',
+    site: 'facebook',
+    code: '1000000000000501',
+    url: 'https://www.facebook.com/watch/?v=1000000000000501#dash',
+    stream: { type: 'dash', videos: [], audios: [] },
+  });
+  const b = it({
+    kind: 'dash',
+    site: 'facebook',
+    code: '1000000000000502',
+    url: 'https://www.facebook.com/watch/?v=1000000000000502#dash',
+    stream: { type: 'dash', videos: [], audios: [] },
+  });
+  assert.equal(resolveVideo([a, b], { src: 'mse:', postCode: '1000000000000502' }, { tabUrl: TAB }).item.id, b.id);
+  assert.equal(resolveVideo([a, b], { src: 'mse:' }, { tabUrl: TAB }).status, 'unmatched');
+  assert.equal(resolveVideo([a, b], { src: '' }, { tabUrl: TAB }).reason, 'no-source');
+});
+
+test('a player without a post code: the stream length counts when the entry has none; equal lengths are told apart by shape', () => {
+  const TAB = 'https://www.facebook.com/';
+  const fb = (code, o) => it({ kind: 'dash', site: 'facebook', code, url: `https://www.facebook.com/watch/?v=${code}#dash`, ...o });
+  const long = fb('1000000000000601', { stream: { type: 'dash', duration: 179, videos: [], audios: [] } });
+  const tall = fb('1000000000000602', { duration: 15, width: 576, height: 1024 });
+  const square = fb('1000000000000603', { duration: 15, width: 1080, height: 1080 });
+  const items = [long, tall, square];
+  // Only the manifest knows this one's length.
+  assert.equal(resolveVideo(items, { src: 'mse:', duration: 179 }, { tabUrl: TAB }).item.id, long.id);
+  // Two 15 s clips: the player's frame (scaled down) is square.
+  assert.equal(resolveVideo(items, { src: 'mse:', duration: 15, width: 720, height: 720 }, { tabUrl: TAB }).item.id, square.id);
+  assert.equal(resolveVideo(items, { src: 'mse:', duration: 15, width: 360, height: 640 }, { tabUrl: TAB }).item.id, tall.id);
+  // Same length, unknown frame: no guess.
+  assert.equal(resolveVideo(items, { src: 'mse:', duration: 15 }, { tabUrl: TAB }).status, 'unmatched');
+});
