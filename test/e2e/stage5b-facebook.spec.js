@@ -76,6 +76,14 @@ test('a watch page: one entry per video, the open one first; player tracks and a
   expect([byUrl.url, byUrl.manifestText ?? null]).toEqual([`${server.url}/media/dash-base/DASHPlaylist.mpd?fb=url`, null]);
   await expect.poll(async () => (await stored(tabId)).find((it) => it.key === `facebook:${ID(5)}:dash`).title).toBe('Manifest Sayfası');
 
+  // Diagnostics: a manifest with no video to tie it to is counted, with where it sat.
+  const stats = await page.evaluate(() => window.__vdlFacebookStats);
+  expect([stats.videosWithoutFiles, stats.filesWithoutId, stats.filesWithoutIdPaths]).toEqual([
+    0,
+    1,
+    ['data.prefetch.videoDeliveryResponseResult'],
+  ]);
+
   const before = await ext.existingDownloadIds();
   await main.locator('.download').click();
   await expect(popup.locator('#status')).toHaveText(/^İndirme başladı: 127\.0\.0\.1-Bir Sayfa · İlk video-\d{8}-\d{4}\.mp4$/);

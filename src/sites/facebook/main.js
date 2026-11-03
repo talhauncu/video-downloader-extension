@@ -37,6 +37,9 @@
     videosSeen: 0,
     videosWithoutFiles: 0,
     withoutFilesKeys: [],
+    // Files found with no video id to tie them to, and where they sat (field names).
+    filesWithoutId: 0,
+    filesWithoutIdPaths: [],
     sampleKeys: [],
   };
   window.__vdlFacebookStats = stats;
@@ -82,7 +85,12 @@
     const video = ctx.video && (own == null || String(own) === ctx.video.id) ? ctx.video : null;
     // A video has an id; a URL alone (a thumbnail's data) is not one.
     const id = own ?? video?.id;
-    if (id == null) return null;
+    if (id == null) {
+      stats.filesWithoutId++;
+      const where = path.slice(-8).join('.');
+      if (stats.filesWithoutIdPaths.length < 3 && !stats.filesWithoutIdPaths.includes(where)) stats.filesWithoutIdPaths.push(where);
+      return null;
+    }
     return {
       id: String(id),
       hd,
@@ -107,6 +115,8 @@
           : null;
     return seconds ? Math.round(seconds) : null;
   }
+
+  const path = []; // field names from the document's root to the node being walked (diagnostics)
 
   function walk(node, out, ctx, depth = 0) {
     if (!node || typeof node !== 'object' || depth > MAX_DEPTH) return;
@@ -148,7 +158,11 @@
     for (const key in node) {
       sampleKey(key);
       const value = node[key];
-      if (value && typeof value === 'object') walk(value, out, ctx, depth + 1);
+      if (value && typeof value === 'object') {
+        path.push(key);
+        walk(value, out, ctx, depth + 1);
+        path.pop();
+      }
     }
   }
 
