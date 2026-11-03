@@ -141,6 +141,13 @@ ffmpeg fails, the tracks are saved separately with a warning. The
 multi-threaded core was not used: its COOP/COEP requirements could affect the
 offscreen document's cross-origin segment fetches.
 
+The vendored files are copies of the npm packages' files, unchanged.
+`npm run check:vendor` (CI, lint job) compares each one with its source in
+`node_modules` (SHA-256), the installed versions with `package-lock.json`, and
+the versions in `src/vendor/ffmpeg/VERSIONS` and `THIRD_PARTY_LICENSES.md` with
+both. A library upgrade copies the new files and updates those two notes in
+the same change.
+
 ## Subtitles
 
 `subtitles.js` parses WebVTT, SubRip and TTML into one cue list and writes

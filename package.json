@@ -13,6 +13,7 @@
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
     "typecheck": "tsc -p .",
+    "check:vendor": "node scripts/check-vendor.js",
     "prepare": "simple-git-hooks",
     "package": "node scripts/package.js",
     "screenshots": "node scripts/screenshots.js"

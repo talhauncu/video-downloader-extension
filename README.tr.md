@@ -110,6 +110,7 @@ npx playwright install chromium --no-shell
 | `npm run e2e` | Playwright e2e testleri: eklenti gerçek Chromium'da, yerel fixture sunucusuna karşı |
 | `npm run lint` | ESLint ve Prettier denetimi |
 | `npm run typecheck` | `src/` üzerinde `tsc --checkJs` |
+| `npm run check:vendor` | `src/vendor/` dosyalarının npm paketlerindekilerle birebir aynı olduğunu denetler (SHA-256) |
 | `npm run format` | Prettier, yazarak |
 | `npm run package` | `dist/video-downloader-<sürüm>.zip` üretir (Releases'taki paket) |
 | `npm run fixtures` | `test/fixtures/media` altındaki örnek medyayı ffmpeg ile yeniden üretir |

@@ -8,7 +8,7 @@ started is quick; the rules below keep it working on the sites people use.
 ```bash
 npm install
 npx playwright install chromium --no-shell
-npm test && npm run lint && npm run typecheck && npm run e2e
+npm test && npm run lint && npm run typecheck && npm run check:vendor && npm run e2e
 ```
 
 Load the folder as an unpacked extension (`chrome://extensions`, Developer
@@ -36,6 +36,9 @@ mode) to try changes by hand; press **Reload** after editing.
   `test:`, `docs:`, `chore:`, `ci:`, `style:`), the body says why.
 - ESLint, Prettier and `tsc --checkJs` must pass (`npm run lint`,
   `npm run typecheck`); the pre-commit hook formats staged files.
+- `src/vendor/` changes only with a library upgrade: copy the files from
+  `node_modules` unchanged and update `src/vendor/ffmpeg/VERSIONS` and
+  `THIRD_PARTY_LICENSES.md`. `npm run check:vendor` (also in CI) verifies it.
 - Note user-visible changes in `CHANGELOG.md` (Keep a Changelog); releases bump
   `manifest.json`'s `version` and are tagged `v<version>`.
 

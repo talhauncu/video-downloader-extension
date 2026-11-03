@@ -109,6 +109,7 @@ npx playwright install chromium --no-shell
 | `npm run e2e` | Playwright e2e tests: the extension in a real Chromium against a local fixture server |
 | `npm run lint` | ESLint and Prettier check |
 | `npm run typecheck` | `tsc --checkJs` over `src/` |
+| `npm run check:vendor` | Checks that `src/vendor/` holds the npm packages' files unchanged (SHA-256) |
 | `npm run format` | Prettier, writing |
 | `npm run package` | Builds `dist/video-downloader-<version>.zip` (what a release contains) |
 | `npm run fixtures` | Regenerates `test/fixtures/media` with ffmpeg |
