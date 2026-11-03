@@ -3,6 +3,16 @@
 All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow semver.
 
+## [0.11.0] - 2026-11-03
+
+### Added
+- Vimeo extractor: on vimeo.com and in Vimeo players embedded in other sites' pages, each video becomes one entry from the player's configuration (`window.playerConfig`, or the `…/config` JSON): the largest progressive MP4 with audio, else the HLS master (the H.264 one first), titled "channel · title". Embedded players' entries keep the player frame as their context.
+- Site extractors can run in every frame (`allFrames`).
+- The in-page button matches an embedded player by the video its frame names, so two players of the same length on one page each download their own video.
+
+### Fixed
+- A player is no longer merged by length into a site entry of another frame (an embedded player could download its neighbour's video).
+
 ## [0.10.1] - 2026-11-03
 
 ### Fixed

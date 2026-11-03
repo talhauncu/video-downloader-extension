@@ -423,3 +423,20 @@ test('organize: a Facebook manifest entry hides behind the MP4 entry of the same
   assert.equal(urlNamesCode(TAB, '503'), true);
   assert.equal(urlNamesCode('https://www.facebook.com/watch/?v=5030', '503'), false);
 });
+
+test('organize: a player is not merged into a site entry of the same length (another embedded player may own it)', () => {
+  const site = it({
+    kind: 'hls',
+    site: 'vimeo',
+    key: 'vimeo:1:hls',
+    code: '1',
+    url: 'https://vod.test/a.m3u8',
+    frameUrl: 'https://player.vimeo.com/video/1',
+    duration: 4,
+    stream: { type: 'media', duration: 4 },
+  });
+  const blob = it({ kind: 'blob', url: 'blob:https://player.vimeo.com/b', frameUrl: 'https://player.vimeo.com/video/2', duration: 4 });
+  const o = organize([site, blob], { tabUrl: 'https://blog.test/' });
+  const card = [...o.recommended, ...o.others].find((c) => c.item.id === site.id);
+  assert.deepEqual(card.merged, []);
+});

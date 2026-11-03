@@ -71,7 +71,7 @@ function sameShape(item, video) {
 }
 
 /**
- * Site players (Instagram, X, Facebook) stream through MSE without a playlist; their
+ * Site players (Instagram, X, Facebook, Vimeo) stream through MSE without a playlist; their
  * complete files are the site entries. The post's shortcode, read from the
  * page around the <video>, identifies the entry exactly. Without a code a
  * single duration match is accepted, and the open page's entry when the URL
@@ -85,6 +85,9 @@ export function siteCardFor(cards, video, tabUrl = '') {
     const exact = siteCards.find((c) => c.item.code === video.postCode);
     if (exact) return { card: exact };
   }
+  // An embedded player whose own frame names the video (player.vimeo.com/video/ID).
+  const framed = video.frameUrl && video.frameUrl !== tabUrl ? siteCards.find((c) => urlNamesCode(video.frameUrl, c.item.code)) : null;
+  if (framed) return { card: framed };
   if (video.duration) {
     const byDuration = siteCards.filter((c) => durationsMatch(durationOf(c.item), video.duration));
     if (byDuration.length === 1) return { card: byDuration[0] };

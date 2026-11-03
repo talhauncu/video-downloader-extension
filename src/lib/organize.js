@@ -331,7 +331,10 @@ export function organize(items, { tabUrl = '', hideAds = true } = {}) {
   }
   const foldedIds = new Set(folded.map((it) => it.id));
 
-  const streams = all.filter((it) => isStream(it) && !foldedIds.has(it.id) && !rawIds.has(it.id));
+  // Site entries are not merge targets: their players are matched by post code,
+  // player frame or length in badge-resolve (a same-length stream of another
+  // frame would take the wrong player).
+  const streams = all.filter((it) => isStream(it) && !it.site && !foldedIds.has(it.id) && !rawIds.has(it.id));
   const durationOf = (s) => streamDuration(s, childrenOf.get(s.id) ?? []);
 
   // 2. Merge blob players into the playlist of their frame.

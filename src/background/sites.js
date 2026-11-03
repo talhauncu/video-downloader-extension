@@ -41,9 +41,11 @@ export function registerSiteScripts(matches = null, siteId = null) {
 
 /** Content scripts of a site: its extractor in the main world, the shared bridge in the isolated one. */
 function scriptsOf(site, matches = site.matches) {
+  // allFrames: players embedded in other sites' pages (an iframe of the site) are covered too.
+  const allFrames = Boolean(site.allFrames);
   return [
-    { id: `${site.id}-main`, matches, js: [site.main], world: 'MAIN', runAt: 'document_start', allFrames: false },
-    { id: `${site.id}-bridge`, matches, js: [BRIDGE_SCRIPT], world: 'ISOLATED', runAt: 'document_start', allFrames: false },
+    { id: `${site.id}-main`, matches, js: [site.main], world: 'MAIN', runAt: 'document_start', allFrames },
+    { id: `${site.id}-bridge`, matches, js: [BRIDGE_SCRIPT], world: 'ISOLATED', runAt: 'document_start', allFrames },
   ];
 }
 

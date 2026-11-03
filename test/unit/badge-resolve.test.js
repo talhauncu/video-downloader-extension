@@ -255,3 +255,13 @@ test('a player without a post code: the stream length counts when the entry has 
   // Same length, unknown frame: no guess.
   assert.equal(resolveVideo(items, { src: 'mse:', duration: 15 }, { tabUrl: TAB }).status, 'unmatched');
 });
+
+test('an embedded player whose frame names the video resolves to that entry, even next to a same-length one', () => {
+  const TAB = 'https://blog.test/yazi/';
+  const a = it({ kind: 'hls', site: 'vimeo', code: '76979871', url: 'https://vod.test/a.m3u8', duration: 60, stream: { type: 'media' } });
+  const b = it({ kind: 'hls', site: 'vimeo', code: '11111111', url: 'https://vod.test/b.m3u8', duration: 60, stream: { type: 'media' } });
+  const player = { src: 'blob:https://player.vimeo.com/x', duration: 60, frameUrl: 'https://player.vimeo.com/video/11111111?h=abc' };
+  assert.equal(resolveVideo([a, b], player, { tabUrl: TAB }).item.id, b.id);
+  // The top page itself is not a player frame: no match by its URL.
+  assert.equal(resolveVideo([a, b], { ...player, frameUrl: TAB }, { tabUrl: TAB }).status, 'unmatched');
+});
