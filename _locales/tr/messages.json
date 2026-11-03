@@ -140,6 +140,9 @@
   "errAudioRepresentation": {
     "message": "Ses temsili çözümlenemedi"
   },
+  "errFileHttp": {
+    "message": "Dosya alınamadı (HTTP $1)"
+  },
   "errNoSubtitles": {
     "message": "İndirilecek altyazı yok"
   },
@@ -500,6 +503,9 @@
   "popupSubtitleDownloading": {
     "message": "Altyazı indiriliyor"
   },
+  "popupFileDownloading": {
+    "message": "Dosya indiriliyor"
+  },
   "popupStreamDownloading": {
     "message": "Akış indiriliyor"
   },
@@ -564,7 +570,7 @@
     "message": "H.264 olmayan görüntüyü (VP9, AV1) H.264'e dönüştür"
   },
   "optTranscodeHint": {
-    "message": "QuickTime VP9/AV1 oynatmaz; dönüştürme tarayıcıda yapılır ve uzun videolarda dakikalar sürebilir. Yalnızca akış (HLS/DASH) indirmelerinde uygulanır."
+    "message": "QuickTime VP9/AV1 oynatmaz; dönüştürme tarayıcıda yapılır ve uzun videolarda dakikalar sürebilir. Açıkken düz video dosyaları da Chrome yerine eklentinin içinden iner ve gerekirse dönüştürülür."
   },
   "optDownloadSection": {
     "message": "İndirme"
@@ -624,7 +630,7 @@
     "message": "Altyazıyı MP4'ün içine göm"
   },
   "optEmbedSubtitlesHint": {
-    "message": "Yalnızca akış (HLS/DASH) indirmelerinde; altyazı ayrı dosya olarak inmez, QuickTime ve VLC'de altyazı menüsünden seçilir. Düz MP4 indirmelerinde altyazı her zaman ayrı dosyadır."
+    "message": "Altyazı ayrı dosya olarak inmez, QuickTime ve VLC'de altyazı menüsünden seçilir. Düz video dosyaları da altyazı seçiliyse eklentinin içinden iner ve tek MP4 olur."
   },
   "optListSection": {
     "message": "Liste"

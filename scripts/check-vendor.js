@@ -14,6 +14,7 @@ export const SOURCES = [
   { file: 'src/vendor/mux-mp4.min.js', pkg: 'mux.js', src: 'dist/mux-mp4.min.js' },
   { dir: 'src/vendor/ffmpeg', pkg: '@ffmpeg/core', src: 'dist/esm', match: /^ffmpeg-core\./ },
   { dir: 'src/vendor/ffmpeg', pkg: '@ffmpeg/ffmpeg', src: 'dist/esm', match: /^(?!ffmpeg-core\.).*\.(js|mjs|d\.ts)$/ },
+  { dir: 'src/vendor/ffmpeg-mt', pkg: '@ffmpeg/core-mt', src: 'dist/esm', match: /^ffmpeg-core\./ },
 ];
 /** Our own notes next to the vendored files. */
 export const NOTES = ['src/vendor/ffmpeg/VERSIONS'];

@@ -149,7 +149,8 @@ katkı kuralları [CONTRIBUTING.md](CONTRIBUTING.md), değişiklikler
 | 5b | Facebook: Reels, Watch ve gönderilerdeki videolar, her biri tek, tam bir MP4 (ya da birleştirilmiş DASH) | ✅ |
 | 5c | Vimeo: vimeo.com'da ve başka sitelere gömülü oynatıcılarda en büyük MP4 ya da HLS master | ✅ |
 | 6a | İndirme sırası (aynı anda N iş), bildirimler, İndirilenler içinde klasör, yarıda kalan akışın devamı | ✅ |
-| 6b, 6c | Performans, Firefox | |
+| 6b | Performans: H.264 dönüştürmede çok iş parçacıklı ffmpeg; düz dosyalar da dönüştürülüyor ve altyazısı gömülüyor | ✅ |
+| 6c | Firefox | |
 
 ## Hızlı kontrol listesi (her sürümde elden geçirilir)
 

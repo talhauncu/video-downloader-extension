@@ -148,7 +148,8 @@ on staged files. There is no build step: the files are loaded as they are.
 | 5b | Facebook: Reels, Watch and videos in posts as one complete MP4 (or merged DASH) each | ✅ |
 | 5c | Vimeo: on vimeo.com and in players embedded in other sites, the largest MP4 or the HLS master | ✅ |
 | 6a | Download queue (N at once), notifications, a folder inside Downloads, continuing a failed stream | ✅ |
-| 6b, 6c | Performance, Firefox | |
+| 6b | Performance: multi-threaded ffmpeg for H.264 conversion; plain files converted and given embedded subtitles too | ✅ |
+| 6c | Firefox | |
 
 ## License
 

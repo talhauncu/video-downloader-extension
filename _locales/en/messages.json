@@ -140,6 +140,9 @@
   "errAudioRepresentation": {
     "message": "Could not resolve the audio representation"
   },
+  "errFileHttp": {
+    "message": "Could not get the file (HTTP $1)"
+  },
   "errNoSubtitles": {
     "message": "No subtitles to download"
   },
@@ -500,6 +503,9 @@
   "popupSubtitleDownloading": {
     "message": "Downloading subtitles"
   },
+  "popupFileDownloading": {
+    "message": "Downloading file"
+  },
   "popupStreamDownloading": {
     "message": "Downloading stream"
   },
@@ -564,7 +570,7 @@
     "message": "Convert non-H.264 video (VP9, AV1) to H.264"
   },
   "optTranscodeHint": {
-    "message": "QuickTime does not play VP9/AV1; converting happens in the browser and can take minutes for long videos. Applies to stream (HLS/DASH) downloads only."
+    "message": "QuickTime does not play VP9/AV1; converting happens in the browser and can take minutes for long videos. When on, plain video files are downloaded by the extension instead of Chrome too, and converted when needed."
   },
   "optDownloadSection": {
     "message": "Downloading"
@@ -624,7 +630,7 @@
     "message": "Embed subtitles in the MP4"
   },
   "optEmbedSubtitlesHint": {
-    "message": "Stream (HLS/DASH) downloads only; the subtitles do not arrive as separate files and are picked from the subtitle menu in QuickTime and VLC. Plain MP4 downloads always get separate subtitle files."
+    "message": "The subtitles do not arrive as separate files and are picked from the subtitle menu in QuickTime and VLC. Plain video files with subtitles chosen are downloaded by the extension too and become one MP4."
   },
   "optListSection": {
     "message": "List"

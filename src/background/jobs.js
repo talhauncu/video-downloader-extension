@@ -7,7 +7,8 @@ import { runOffscreenJob } from './offscreen.js';
 import { addJobRule, removeRule } from './header-rules.js';
 import { buildFilename, buildFolder } from '../lib/filename.js';
 import { downloadBlob, onTrackedDownloadEnd } from './downloads.js';
-import { KIND, groupKey } from '../lib/media-url.js';
+import { KIND, groupKey, extensionOf } from '../lib/media-url.js';
+import { rangePlan, sizeFromContentRange } from '../lib/file-plan.js';
 import { isMasterPlaylist, parseMasterPlaylist, parseMediaPlaylist, sortVariants, variantLabel } from '../lib/m3u8.js';
 import { parseMpd, tracksOf, videoLabel, audioLabel } from '../lib/mpd.js';
 import { formatOf, normalizeLanguage, languageLabel, languageSuffix, describeSubtitle } from '../lib/subtitles.js';
@@ -464,6 +465,75 @@ export async function startStreamJob({ tabId, id, variantUrl, audioUrl, videoRep
 }
 
 /**
+ * Size of a plain file and whether its server serves byte ranges, asked with
+ * the requesting frame's headers (a one-byte range request).
+ * @returns {Promise<{size:number|null, ranges:boolean}>}
+ */
+async function fileSize(url, contextUrl) {
+  const ruleId = await addJobRule(contextUrl);
+  try {
+    const res = await fetchWithRetry(url, { headers: { Range: 'bytes=0-0' }, credentials: 'include' }, undefined, swThrottle());
+    await res.body?.cancel().catch(() => {});
+    if (!res.ok) {
+      const error = /** @type {Error & {detail?: Object}} */ (new Error(t('errFileHttp', res.status)));
+      error.detail = { step: 'file', status: res.status, url, referer: contextUrl };
+      throw error;
+    }
+    if (res.status === 206) return { size: sizeFromContentRange(res.headers.get('content-range')), ranges: true };
+    return { size: Number(res.headers.get('content-length')) || null, ranges: false };
+  } finally {
+    await removeRule(ruleId);
+  }
+}
+
+/**
+ * A plain video file downloaded by the extension instead of Chrome, so ffmpeg
+ * can convert it to H.264 or embed the page's subtitles: one 'file' track
+ * fetched in byte ranges (a stream job: queue, progress, resume).
+ * @param {{tabId:number, id:string, subtitles?:{source:string, ref:string, lang?:string|null, label?:string}[]}} p
+ */
+export async function startFileJob({ tabId, id, subtitles = [] }) {
+  const item = await store.get(tabId, id);
+  if (!item) throw new Error(t('errItemNotFound'));
+  const tab = await chrome.tabs.get(tabId).catch(() => null);
+  const pageUrl = item.pageUrl ?? tab?.url ?? null;
+  const settings = await getSettings();
+  const { size, ranges } = await fileSize(item.url, contextUrlOf(item, pageUrl));
+  const items = await store.list(tabId);
+  const fileSubs = subtitles.map((c) => subtitleTrackFor(c, items)).filter(Boolean);
+  const ext = extensionOf(item.url) || 'mp4';
+  // Test hook: e2e uses small pieces (never set by the UI).
+  const tracks = [
+    ...fileSubs,
+    {
+      role: 'video',
+      type: 'file',
+      url: item.url,
+      segments: rangePlan(item.url, ranges ? size : null, globalThis.__vdlFileChunkBytes),
+      ext,
+    },
+  ];
+  const filename = buildFilename({
+    pageUrl: tab?.url ?? pageUrl,
+    title: item.title ?? tab?.title,
+    ext,
+    template: settings.filenameTemplate,
+    quality: item.height ? `${item.height}p` : null,
+  });
+  return launch({
+    tabId,
+    item,
+    itemId: id,
+    tracks,
+    pageUrl,
+    siteUrl: tab?.url ?? pageUrl,
+    filename,
+    stem: filename.replace(/\.[a-z0-9]+$/i, ''),
+    settings,
+  });
+}
+
+/**
  * Subtitles only: a standalone subtitle entry, or the subtitles of a plain
  * video file (which chrome.downloads fetches on its own).
  * @param {{tabId:number, item:Object, choices:Object[], filename?:string|null, own?:boolean}} p
@@ -517,7 +587,13 @@ async function launch({ tabId, item, itemId, tracks, pageUrl, siteUrl = pageUrl,
   const resumeKey = kind === 'subtitle' ? null : resumeKeyOf(item, tracks);
   const payload = {
     tracks,
-    postProcess: { merge: settings.mergeTracks, transcode: settings.transcodeToH264, embedSubtitles: settings.embedSubtitles },
+    postProcess: {
+      merge: settings.mergeTracks,
+      transcode: settings.transcodeToH264,
+      embedSubtitles: settings.embedSubtitles,
+      // Test hook: e2e picks the ffmpeg core ('single', 'mt-fail'; never set by the UI).
+      ffmpegCore: globalThis.__vdlFfmpegCore ?? undefined,
+    },
     concurrency: settings.concurrency,
     stripJunk: settings.stripJunk,
     subtitleFormat: settings.subtitleFormat,
@@ -817,6 +893,7 @@ export async function onComplete({ jobId, files, duration }) {
         remuxed,
         transcoded,
         codecs,
+        ffmpeg,
         junkBytes,
         retries,
         cooldowns,
@@ -834,6 +911,7 @@ export async function onComplete({ jobId, files, duration }) {
         remuxed,
         transcoded,
         codecs,
+        ...(ffmpeg ? { ffmpeg } : {}),
         junkBytes: junkBytes ?? 0,
         retries: retries ?? 0,
         cooldowns: cooldowns ?? 0,

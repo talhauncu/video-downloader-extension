@@ -8,6 +8,7 @@ extension ships these third-party components in `src/vendor/`:
 | [mux.js](https://github.com/videojs/mux.js) (Brightcove) | 7.1.1 | Apache-2.0 | `src/vendor/mux-mp4.min.js` | [licenses/mux.js-Apache-2.0.txt](licenses/mux.js-Apache-2.0.txt) |
 | [@ffmpeg/ffmpeg](https://github.com/ffmpegwasm/ffmpeg.wasm) (ffmpeg.wasm JavaScript API) | 0.12.15 | MIT | `src/vendor/ffmpeg/*.js`, `*.d.ts` (except `ffmpeg-core.*`) | [licenses/ffmpeg.wasm-MIT.txt](licenses/ffmpeg.wasm-MIT.txt) |
 | [@ffmpeg/core](https://github.com/ffmpegwasm/ffmpeg.wasm) (FFmpeg compiled to WebAssembly) | 0.12.10 | GPL-2.0-or-later | `src/vendor/ffmpeg/ffmpeg-core.js`, `ffmpeg-core.wasm` | [licenses/GPL-2.0.txt](licenses/GPL-2.0.txt) |
+| [@ffmpeg/core-mt](https://github.com/ffmpegwasm/ffmpeg.wasm) (the same, multi-threaded build) | 0.12.10 | GPL-2.0-or-later | `src/vendor/ffmpeg-mt/ffmpeg-core.js`, `ffmpeg-core.wasm`, `ffmpeg-core.worker.js` | [licenses/GPL-2.0.txt](licenses/GPL-2.0.txt) |
 
 ## About the GPL part
 

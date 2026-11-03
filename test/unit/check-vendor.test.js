@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { checkVendor } from '../../scripts/check-vendor.js';
 
-const VERSIONS = { 'mux.js': '7.1.1', '@ffmpeg/ffmpeg': '0.12.15', '@ffmpeg/core': '0.12.10' };
+const VERSIONS = { 'mux.js': '7.1.1', '@ffmpeg/ffmpeg': '0.12.15', '@ffmpeg/core': '0.12.10', '@ffmpeg/core-mt': '0.12.10' };
 
 /** A small repository: lock file, installed packages, vendored copies and the two version notes. */
 function repo({ installed = VERSIONS, notes = VERSIONS } = {}) {
@@ -25,6 +25,7 @@ function repo({ installed = VERSIONS, notes = VERSIONS } = {}) {
     '@ffmpeg/ffmpeg/dist/esm/classes.d.ts': ['src/vendor/ffmpeg/classes.d.ts', 'types'],
     '@ffmpeg/core/dist/esm/ffmpeg-core.js': ['src/vendor/ffmpeg/ffmpeg-core.js', 'core'],
     '@ffmpeg/core/dist/esm/ffmpeg-core.wasm': ['src/vendor/ffmpeg/ffmpeg-core.wasm', Buffer.from([0, 97, 115, 109])],
+    '@ffmpeg/core-mt/dist/esm/ffmpeg-core.worker.js': ['src/vendor/ffmpeg-mt/ffmpeg-core.worker.js', 'mt-worker'],
   };
   for (const [from, [to, content]] of Object.entries(files)) {
     put(`node_modules/${from}`, content);
@@ -32,7 +33,7 @@ function repo({ installed = VERSIONS, notes = VERSIONS } = {}) {
   }
   put(
     'src/vendor/ffmpeg/VERSIONS',
-    `@ffmpeg/ffmpeg ${notes['@ffmpeg/ffmpeg']} (dist/esm)\n@ffmpeg/core   ${notes['@ffmpeg/core']} (dist/esm)\n`,
+    `@ffmpeg/ffmpeg ${notes['@ffmpeg/ffmpeg']} (dist/esm)\n@ffmpeg/core   ${notes['@ffmpeg/core']} (dist/esm)\n@ffmpeg/core-mt ${notes['@ffmpeg/core-mt']} (dist/esm)\n`,
   );
   put(
     'THIRD_PARTY_LICENSES.md',
@@ -46,7 +47,7 @@ function repo({ installed = VERSIONS, notes = VERSIONS } = {}) {
 test('checkVendor: identical copies and matching versions pass', () => {
   const r = repo();
   try {
-    assert.deepEqual(checkVendor(r.root), { problems: [], checked: 5 });
+    assert.deepEqual(checkVendor(r.root), { problems: [], checked: 6 });
   } finally {
     r.done();
   }

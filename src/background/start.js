@@ -83,6 +83,11 @@ export async function startDownload({ tabId, id, subtitles = 'auto', ...quality 
     const result = await jobs.startStreamJob({ tabId, id, ...quality, subtitles: picked });
     return parent ? { ...result, itemId: id, redirectedFrom: first.id } : result;
   }
+  // A plain video ffmpeg has to work on (H.264 conversion, subtitles to embed):
+  // the extension downloads it itself, like a stream.
+  if (item.kind === KIND.VIDEO && (settings.transcodeToH264 || (settings.embedSubtitles && picked.length))) {
+    return jobs.startFileJob({ tabId, id, subtitles: picked });
+  }
   if (item.kind === KIND.VIDEO || item.kind === KIND.AUDIO) {
     const result = await downloadItem({ tabId, id });
     if (!picked.length) return result;

@@ -507,7 +507,12 @@ async function startDownload(item, btn, extra) {
     const subtitleOnly = result.kind === 'subtitle';
     const subs = result.subtitles && !subtitleOnly ? t('popupPlusSubtitles', result.subtitles) : '';
     if (result.jobId) {
-      const what = subtitleOnly ? t('popupSubtitleDownloading') : t('popupStreamDownloading');
+      // A plain file the extension downloads itself (to convert it or embed subtitles) is a job too.
+      const what = subtitleOnly
+        ? t('popupSubtitleDownloading')
+        : result.kind === 'video'
+          ? t('popupFileDownloading')
+          : t('popupStreamDownloading');
       const media = result.tracks - (result.subtitles ?? 0);
       showStatus((media > 1 ? t('popupStatusFiles', what, media, result.filename) : t('popupStatusFile', what, result.filename)) + subs);
     } else {
