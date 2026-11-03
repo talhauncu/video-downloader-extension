@@ -13,6 +13,7 @@ import {
   badgeCount,
   subtitleSegmentDirs,
   subtitleChoices,
+  urlNamesCode,
 } from '../../src/lib/organize.js';
 
 const PLAYER = 'https://player.test/embed/abc/?id=1';
@@ -365,4 +366,38 @@ test('masterFor: the described master of a sub-playlist and which variant it is'
   assert.equal(masterFor([m, sub('other.txt')], sub('other.txt')), null);
   assert.equal(masterFor([m], m), null);
   assert.equal(masterFor([m], { kind: 'video', url: 'https://cdn.test/film.mp4' }), null);
+});
+
+test('organize: X → chunks of an extracted video hide behind its entry; a video the extractor missed stays', () => {
+  const TAB = 'https://x.com/someone/status/9001';
+  const items = [
+    it({ kind: 'hls', url: 'https://video.twimg.com/ext_tw_video/111/pu/pl/m.m3u8', coveredBy: 'twitter:111', frameUrl: TAB }),
+    it({ kind: 'segment', url: 'https://video.twimg.com/ext_tw_video/111/pu/vid/s.m4s', coveredBy: 'twitter:111', frameUrl: TAB }),
+    it({ kind: 'hls', url: 'https://video.twimg.com/ext_tw_video/222/pu/pl/m.m3u8', coveredBy: 'twitter:222', frameUrl: TAB }),
+    it({
+      kind: 'video',
+      site: 'twitter',
+      key: 'twitter:111',
+      code: '9001',
+      url: 'https://video.twimg.com/ext_tw_video/111/pu/vid/avc1/1280x720/c.mp4',
+      duration: 12,
+    }),
+    // A GIF: the page's <video> and the site entry are the same file.
+    it({ kind: 'video', url: 'https://video.twimg.com/tweet_video/G.mp4', source: 'dom', frameUrl: TAB }),
+    it({ kind: 'video', site: 'twitter', key: 'twitter:333', code: '9003', url: 'https://video.twimg.com/tweet_video/G.mp4' }),
+  ];
+  const o = organize(items, { tabUrl: TAB });
+  assert.equal(o.main.item.key, 'twitter:111');
+  assert.deepEqual(o.raw.map((x) => x.url).sort(), [items[0].url, items[1].url, items[4].url].sort());
+  // Media 222 has no entry: its playlist is still listed.
+  assert.ok([...o.recommended, ...o.others].some((c) => c.item.url === items[2].url));
+});
+
+test('urlNamesCode: the code must be a whole path segment', () => {
+  assert.equal(urlNamesCode('https://x.com/someone/status/9001', '9001'), true);
+  assert.equal(urlNamesCode('https://x.com/someone/status/9001?s=20', '9001'), true);
+  assert.equal(urlNamesCode('https://x.com/someone/status/90012', '9001'), false);
+  assert.equal(urlNamesCode('https://www.instagram.com/reel/ABC123XY/', 'ABC123XY'), true);
+  assert.equal(urlNamesCode('', '1'), false);
+  assert.equal(urlNamesCode('https://x.com/', null), false);
 });

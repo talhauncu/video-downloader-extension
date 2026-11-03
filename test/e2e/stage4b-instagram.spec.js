@@ -12,7 +12,9 @@ test.beforeAll(async () => {
   server = await startServer();
   ext = await launchWithExtension();
   // The Instagram extractor is registered for instagram.com; add the fixture origin.
-  const ids = await ext.worker.evaluate(() => globalThis.__vdl.registerSiteScripts(['*://*.instagram.com/*', 'http://127.0.0.1/*']));
+  const ids = await ext.worker.evaluate(() =>
+    globalThis.__vdl.registerSiteScripts(['*://*.instagram.com/*', 'http://127.0.0.1/*'], 'instagram'),
+  );
   expect(ids).toEqual(['instagram-main', 'instagram-bridge']);
 });
 
@@ -106,7 +108,14 @@ test('reels become one complete entry each; raw DASH chunks are hidden behind a 
     tabId,
   );
   expect(debug.ok).toBe(true);
-  expect(debug.result.siteScripts.map((s) => s.id).sort()).toEqual(['instagram-bridge', 'instagram-main']);
+  // Every site's scripts are registered; Instagram's carry the fixture origin.
+  expect(debug.result.siteScripts.map((s) => s.id).sort()).toEqual([
+    'instagram-bridge',
+    'instagram-main',
+    'twitter-bridge',
+    'twitter-main',
+  ]);
+  expect(debug.result.siteScripts.find((s) => s.id === 'instagram-main').matches).toContain('http://127.0.0.1/*');
   expect(debug.result.siteStats.hooked).toBe(true);
   expect(debug.result.mainWorldProbe.hooked).toBe(true);
 
@@ -133,7 +142,7 @@ test('reels become one complete entry each; raw DASH chunks are hidden behind a 
 test('extractor is injected on demand when the registered script did not run', async () => {
   // Unregister for the fixture origin; only instagram.com stays. Then open the
   // popup: media:list must inject both scripts into the tab.
-  await ext.worker.evaluate(() => globalThis.__vdl.registerSiteScripts(['*://*.instagram.com/*']));
+  await ext.worker.evaluate(() => globalThis.__vdl.registerSiteScripts(['*://*.instagram.com/*'], 'instagram'));
   const page = await ext.context.newPage();
   await page.goto(`${server.url}/pages/ig-json.html/ABC111/`);
   await expect(page.locator('body')).toHaveAttribute('data-chunks-loaded', 'true');
@@ -142,7 +151,7 @@ test('extractor is injected on demand when the registered script did not run', a
   expect(await page.evaluate(() => Boolean(window.__vdlInstagramHooked))).toBe(false);
   const tabId = await ext.tabIdOf(page);
   // Only now does the fixture host count as a "site": the page-load hook did not fire for it.
-  await ext.worker.evaluate(() => globalThis.__vdl.addSiteHost('127.0.0.1'));
+  await ext.worker.evaluate(() => globalThis.__vdl.addSiteHost('127.0.0.1', 'instagram'));
 
   const popup = await ext.openPopup(tabId);
   // The popup injected the extractor just now; the two inline JSON blocks are
@@ -182,7 +191,7 @@ test('a dead bridge after an extension reload is replaced and the extractor repl
   // Fresh extension instance so no site host / registration from earlier tests interferes.
   const fresh = await launchWithExtension();
   try {
-    await fresh.worker.evaluate(() => globalThis.__vdl.registerSiteScripts(['*://*.instagram.com/*']));
+    await fresh.worker.evaluate(() => globalThis.__vdl.registerSiteScripts(['*://*.instagram.com/*'], 'instagram'));
     const page = await fresh.context.newPage();
     await page.goto(`${server.url}/pages/ig-json.html/ABC111/`);
     await expect(page.locator('body')).toHaveAttribute('data-chunks-loaded', 'true');
@@ -210,7 +219,7 @@ test('a dead bridge after an extension reload is replaced and the extractor repl
     // Now the host counts as a site; opening the popup finds no live bridge and
     // an outdated extractor, installs both, and the new extractor rescans the
     // page's inline JSON.
-    await fresh.worker.evaluate(() => globalThis.__vdl.addSiteHost('127.0.0.1'));
+    await fresh.worker.evaluate(() => globalThis.__vdl.addSiteHost('127.0.0.1', 'instagram'));
     const popup = await fresh.openPopup(tabId);
     await expect(popup.locator('.item[data-site="instagram"]'))
       .toHaveCount(2)

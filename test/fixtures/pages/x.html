@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"><title>X Benzeri Sayfa</title>
+  <style>article { width: 360px; margin: 24px auto; border: 1px solid #ccc; } video { width: 360px; height: 220px; background: #000; display: block; }</style>
+</head>
+<body>
+  <main id="timeline"></main>
+  <script>
+    // Posts like X: an MSE (blob:) player for videos, a plain looping <video> for
+    // GIFs, the time link /<user>/status/<id> under the media.
+    const posts = [['someone', '185000000000000001', 'mse'], ['other', '185000000000000002', 'mse'], ['gifci', '185000000000000003', '/media/sample.mp4?gif=1']];
+    for (const [user, id, src] of posts) {
+      const article = document.createElement('article');
+      article.innerHTML = `<div class="user"><a href="/${user}">@${user}</a></div><div class="media"><video muted playsinline loop data-id="${id}"></video></div>`
+        + `<div class="meta"><a href="/${user}/status/${id}"><time>2 sa</time></a> · <a href="/${user}/status/${id}/analytics">Görüntülenme</a></div>`;
+      document.getElementById('timeline').appendChild(article);
+      const video = article.querySelector('video');
+      if (src === 'mse') {
+        const ms = new MediaSource();
+        video.src = URL.createObjectURL(ms);
+        ms.addEventListener('sourceopen', () => { ms.duration = 4; });
+      } else {
+        video.src = src;
+      }
+    }
+    // The player loads the first video's HLS master, as X's player does.
+    fetch('/media/x/ext_tw_video/111/pu/pl/master.m3u8?tag=12').then(() => { document.body.dataset.playerLoaded = 'true'; });
+
+    // Called by the test once the extractor is in place: the client's GraphQL request.
+    window.loadApi = () =>
+      fetch('/media/x/tweet-detail.json', { headers: { 'content-type': 'application/json' } })
+        .then((r) => r.json())
+        .then(() => { document.body.dataset.apiLoaded = 'true'; });
+  </script>
+</body>
+</html>

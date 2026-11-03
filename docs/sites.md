@@ -2,7 +2,7 @@
 
 Most sites need nothing special: the extension sees their MP4s, playlists and
 manifests on the network. A **site extractor** is for sites whose player hides
-the useful file: Instagram streams separate DASH tracks, while the page's own
+the useful file: Instagram and X stream separate tracks, while the page's own
 data holds complete MP4s with audio. Prefer a general fix (capture, matching,
 resilience) when one exists; write an extractor when the right file is only
 in the page.
@@ -37,6 +37,12 @@ export default {
   version: 1,                          // = VERSION in main.js; bump both together
   globals: { hooked: '__vdlExampleHooked', version: '__vdlExampleVersion', stats: '__vdlExampleStats' },
   fetchContext: 'page',                // Referer for its URLs: 'page' (the tab) or 'frame' (the reporting frame)
+  // Optional: the entry a captured player chunk belongs to. The list hides the
+  // chunk behind that entry once it exists (and only then).
+  chunkOf(url) {
+    const id = /\/videos\/(\d+)\//.exec(new URL(url).pathname)?.[1];
+    return id ? `example:${id}` : null;  // = the key toItems gives that video
+  },
 
   // One report from the extractor → store entries.
   toItems(report, { pageUrl }) {
@@ -66,9 +72,13 @@ two sites claim the same hosts, that `main.js` exists, sets the three
 `globals` and declares the same `VERSION`.
 
 Entries with `site` set are "site entries": the list ranks the open page's
-one first ("This page"), raw chunks of the same video can be hidden behind
-them (`hidden` on captured chunks), and the in-page badge matches feed videos
-to them by `code` (a post's shortcode) or duration.
+one first ("This page"; the page URL names `code` as a path segment), raw
+chunks of the same video are hidden behind them (`chunkOf`, or Instagram's
+`hidden` track tags), a captured copy of the entry's own file is hidden too,
+and the in-page badge matches feed videos to them by `code` (a post's
+shortcode or id, read from links like `/p/CODE/` or `/user/status/ID` around
+the video) or duration. A new link shape goes into `POST_LINK` in
+`src/content/badge.js`.
 
 ## 2. The extractor
 
@@ -131,12 +141,13 @@ Rules that came from real bugs:
   fixture origin and point the site at the fixture host:
 
   ```js
-  await ext.worker.evaluate(() => globalThis.__vdl.registerSiteScripts(['*://*.example.com/*', 'http://127.0.0.1/*']));
+  await ext.worker.evaluate(() => globalThis.__vdl.registerSiteScripts(['*://*.example.com/*', 'http://127.0.0.1/*'], 'example'));
   await ext.worker.evaluate(() => globalThis.__vdl.addSiteHost('127.0.0.1', 'example'));
   ```
 
   Then check that the popup shows one complete entry per video, that the
   download is byte-exact, that the debug info reports the extractor, and that
   a reload of the extension does not lose what was found. End the spec with
-  "service worker logged no errors". See `test/e2e/stage4b-instagram.spec.js`.
+  "service worker logged no errors". See `test/e2e/stage4b-instagram.spec.js`
+  and `test/e2e/stage5a-twitter.spec.js`.
 - Add the site to the real-site checklist in the README for manual tests.

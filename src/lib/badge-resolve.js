@@ -3,7 +3,7 @@
 // the toolbar badge and the shortcut agree.
 
 import { KIND, groupKey, normalizeMediaUrl } from './media-url.js';
-import { organize, isAd, durationsMatch, subtitleChoices } from './organize.js';
+import { organize, isAd, durationsMatch, subtitleChoices, urlNamesCode } from './organize.js';
 import { autoPick } from './subtitles.js';
 import { pickAudio, audioLanguage, audioTrackLabel } from './audio-lang.js';
 import { t } from './i18n.js';
@@ -59,7 +59,7 @@ function notesFor(item) {
 }
 
 /**
- * Site players (Instagram) stream through MSE without a playlist; their
+ * Site players (Instagram, X) stream through MSE without a playlist; their
  * complete files are the site entries. The post's shortcode, read from the
  * page around the <video>, identifies the entry exactly. Without a code a
  * single duration match is accepted, and the open page's entry when the URL
@@ -77,7 +77,7 @@ export function siteCardFor(cards, video, tabUrl = '') {
     const byDuration = siteCards.filter((c) => durationsMatch(c.item.duration, video.duration));
     if (byDuration.length === 1) return { card: byDuration[0] };
   }
-  const onPage = siteCards.find((c) => c.item.code && tabUrl.includes(`/${c.item.code}/`));
+  const onPage = siteCards.find((c) => urlNamesCode(tabUrl, c.item.code));
   if (onPage && (!video.duration || !onPage.item.duration || durationsMatch(onPage.item.duration, video.duration))) return { card: onPage };
   // A post we can name but whose data has not arrived: wait instead of guessing.
   if (video.postCode)
@@ -119,6 +119,8 @@ export function resolveVideo(
   } else {
     const normalized = normalizeMediaUrl(src);
     const item =
+      // A site entry with this very file (an X GIF) knows its post's title.
+      items.find((it) => it.site && (it.url === src || it.url === normalized)) ??
       items.find((it) => it.url === src || it.url === normalized) ??
       items.find(
         (it) => (it.kind === KIND.VIDEO || it.kind === KIND.AUDIO) && groupKey(it.url, it.kind) === groupKey(normalized, KIND.VIDEO),

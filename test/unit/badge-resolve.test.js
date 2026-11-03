@@ -196,3 +196,25 @@ test('resolveVideo names the audio language the badge takes when a stream has se
   const single = { ...master, stream: { ...master.stream, audios: master.stream.audios.slice(0, 1) } };
   assert.doesNotMatch(resolveVideo([single, child, blob], video, { tabUrl: page }).note, /Ses:/);
 });
+
+test('X: the post id decides on a status page without a trailing slash; a GIF resolves to its site entry', () => {
+  const TAB = 'https://x.com/someone/status/9001';
+  const video = it({
+    kind: 'video',
+    site: 'twitter',
+    code: '9001',
+    url: 'https://video.twimg.com/ext_tw_video/111/c.mp4',
+    duration: 12,
+    title: '@someone hi',
+  });
+  const other = it({ kind: 'video', site: 'twitter', code: '9002', url: 'https://video.twimg.com/ext_tw_video/222/c.mp4', duration: 12 });
+  const gifDom = it({ kind: 'video', url: 'https://video.twimg.com/tweet_video/G.mp4', source: 'dom' });
+  const gif = it({ kind: 'video', site: 'twitter', code: '9003', url: 'https://video.twimg.com/tweet_video/G.mp4', title: '@gif post' });
+  const player = it({ kind: 'blob', url: 'blob:https://x.com/p', frameUrl: TAB, duration: 12 });
+  const items = [video, other, gifDom, gif, player];
+  assert.equal(resolveVideo(items, { src: player.url, duration: 12, postCode: '9002' }, { tabUrl: TAB }).item.id, other.id);
+  // No code read from the page: the status page names the post.
+  assert.equal(resolveVideo(items, { src: player.url, duration: 12 }, { tabUrl: TAB }).item.id, video.id);
+  const g = resolveVideo(items, { src: gif.url }, { tabUrl: TAB });
+  assert.deepEqual([g.item.id, g.title], [gif.id, '@gif post']);
+});

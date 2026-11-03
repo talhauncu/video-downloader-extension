@@ -297,16 +297,16 @@ function renderAudioSelect(item, node, info, qualitySelect) {
 }
 
 /**
- * On a supported site (Instagram) without complete entries, explain why only
- * raw chunks are listed and what fixes it.
+ * On a supported site (Instagram, X) without complete entries, explain why
+ * only raw chunks are listed and what fixes it.
  */
 function renderSiteNote(hasSiteEntries) {
   let text = '';
   if (siteState.applicable && !hasSiteEntries) {
     if (!siteState.hooked || siteState.injectedNow) {
-      text = t('siteNoteReload');
+      text = t('siteNoteReload', siteState.label ?? '');
     } else if (siteState.found === 0) {
-      text = t('siteNoteNoEntries');
+      text = t('siteNoteNoEntries', siteState.label ?? '');
     }
   }
   siteNote.textContent = text;

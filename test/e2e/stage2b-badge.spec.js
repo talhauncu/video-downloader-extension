@@ -169,7 +169,7 @@ test('an unmatched player stream shows the badge with a pointer to the list', as
 });
 
 test("Instagram-like feed: each post's badge downloads that post, not the longest reel", async () => {
-  await ext.worker.evaluate(() => globalThis.__vdl.registerSiteScripts(['*://*.instagram.com/*', 'http://127.0.0.1/*']));
+  await ext.worker.evaluate(() => globalThis.__vdl.registerSiteScripts(['*://*.instagram.com/*', 'http://127.0.0.1/*'], 'instagram'));
   try {
     const page = await ext.context.newPage();
     await page.goto(`${server.url}/pages/ig-feed.html`);
@@ -195,7 +195,7 @@ test("Instagram-like feed: each post's badge downloads that post, not the longes
     }
     await page.close();
   } finally {
-    await ext.worker.evaluate(() => globalThis.__vdl.registerSiteScripts(['*://*.instagram.com/*']));
+    await ext.worker.evaluate(() => globalThis.__vdl.registerSiteScripts(['*://*.instagram.com/*'], 'instagram'));
   }
 });
 

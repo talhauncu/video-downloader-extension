@@ -429,10 +429,10 @@
     "message": "$1 subtitles inside MP4 (not supported)"
   },
   "siteNoteReload": {
-    "message": "Instagram: the extension was loaded after this tab was opened. Reload the page (⌘R) for complete files, then open the popup again."
+    "message": "$1: the extension was loaded after this tab was opened. Reload the page (⌘R) for complete files, then open the popup again."
   },
   "siteNoteNoEntries": {
-    "message": "Instagram: no complete file data on this page, only raw pieces are listed. Try opening the Reel and reloading the page."
+    "message": "$1: no complete file data on this page, only raw pieces are listed. Try opening the post and reloading the page."
   },
   "popupPlayerStream": {
     "message": "Player stream"

@@ -280,13 +280,14 @@
   // ---- resolution ----------------------------------------------------------
 
   // Post/reel shortcodes are 8+ characters; /reels/audio/<id>/ (the track a
-  // reel uses) and similar pages are not posts.
-  const POST_LINK = /\/(?:p|reels?|tv)\/(?!audio\/|tags?\/|locations?\/)([A-Za-z0-9_-]{8,})(?:\/|$|\?)/;
+  // reel uses) and similar pages are not posts. X posts: /<user>/status/<id>.
+  const POST_LINK =
+    /\/(?:(?:p|reels?|tv)\/(?!audio\/|tags?\/|locations?\/)([A-Za-z0-9_-]{8,})|[A-Za-z0-9_]{1,30}\/status\/(\d{5,}))(?:\/|$|\?)/;
 
   /**
-   * Shortcode of the post a video belongs to (Instagram-style feeds): the
-   * closest ancestor that still contains only this video and a /p/CODE/ or
-   * /reel/CODE/ link. Reel viewers keep the code of the reel in view in the
+   * Shortcode of the post a video belongs to (Instagram and X feeds): the
+   * closest ancestor that still contains only this video and a /p/CODE/,
+   * /reel/CODE/ or /user/status/ID link. Reel viewers keep the code of the reel in view in the
    * URL, used when the video sits in the middle of the viewport.
    */
   function postCodeFor(video) {
@@ -295,7 +296,7 @@
       if (node.querySelectorAll('video').length > 1) break; // reached a container of several posts
       for (const a of node.querySelectorAll('a[href]')) {
         const m = POST_LINK.exec(a.getAttribute('href') || '');
-        if (m) return m[1];
+        if (m) return m[1] ?? m[2];
       }
     }
     const fromUrl = POST_LINK.exec(location.pathname);
@@ -303,7 +304,7 @@
       const r = video.getBoundingClientRect();
       const cx = innerWidth / 2;
       const cy = innerHeight / 2;
-      if (cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom) return fromUrl[1];
+      if (cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom) return fromUrl[1] ?? fromUrl[2];
     }
     return null;
   }

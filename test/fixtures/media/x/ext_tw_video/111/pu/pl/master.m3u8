@@ -1,0 +1,5 @@
+#EXTM3U
+#EXT-X-VERSION:7
+#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="aud",NAME="Audio",DEFAULT=YES,AUTOSELECT=YES,URI="/media/hls-audio/audio/playlist.m3u8"
+#EXT-X-STREAM-INF:BANDWIDTH=800000,RESOLUTION=320x180,CODECS="avc1.64000d,mp4a.40.2",AUDIO="aud"
+/media/hls-audio/video/playlist.m3u8
