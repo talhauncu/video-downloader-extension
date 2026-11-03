@@ -31,6 +31,10 @@ jobs:
       - run: npm run typecheck
       - name: Vendored files are the npm packages' files (SHA-256)
         run: npm run check:vendor
+      - name: The Firefox build passes Mozilla's add-on linter (addons.mozilla.org runs the same)
+        run: |
+          npm run build:firefox
+          npx web-ext lint --source-dir dist/firefox
 
   package:
     # Dry run of the release package: the zip builds and holds a loadable extension.
@@ -40,15 +44,21 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: npm run package
+      - run: npm run package -- --firefox
       - name: Zip holds the manifest, locales, sources and licenses
         run: |
-          zip=$(ls dist/video-downloader-*.zip)
+          zip=$(ls dist/video-downloader-[0-9]*.zip)
           unzip -l "$zip" | grep -E ' manifest\.json$'
           unzip -l "$zip" | grep -E ' _locales/en/messages\.json$'
           unzip -l "$zip" | grep -E ' src/background/service-worker\.js$'
           unzip -l "$zip" | grep -E ' licenses/GPL-2\.0\.txt$'
           ! unzip -l "$zip" | grep -E ' (test|node_modules)/'
+      - name: The Firefox zip holds a Firefox manifest and no multi-threaded core
+        run: |
+          zip=$(ls dist/video-downloader-firefox-*.zip)
+          unzip -p "$zip" manifest.json | grep -F '"gecko"'
+          unzip -l "$zip" | grep -E ' src/offscreen/offscreen\.js$'
+          ! unzip -l "$zip" | grep -E ' src/vendor/ffmpeg-mt/'
       - name: A tag that does not match the manifest is refused
         run: '! node scripts/package.js --check-tag v0.0.0'
 
@@ -69,9 +79,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
-      - name: Install Chromium (and system deps)
-        run: npx playwright install --with-deps chromium --no-shell
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}-chromium-firefox
+      - name: Install Chromium and Firefox (and system deps)
+        run: npx playwright install --with-deps chromium firefox --no-shell
         timeout-minutes: 8
       - run: npm run e2e
         timeout-minutes: 8

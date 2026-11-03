@@ -1,14 +1,15 @@
-# Video İndirici (Chrome eklentisi)
+# Video İndirici (Chrome ve Firefox eklentisi)
 
 [English](README.md)
 
-Sayfada oynayan videoları indiren bir Manifest V3 Chrome eklentisi: düz
+Sayfada oynayan videoları indiren, Chrome ve Firefox için bir Manifest V3 eklentisi: düz
 dosyalar (MP4/WebM), HLS ve DASH akışları ve altyazıları. Üçüncü taraf oynatıcı
 iframe'lerinin içinde de çalışır (gömülü oynatıcılar), ayrı gelen görüntü ve sesi
 tarayıcıda tek MP4'te birleştirir (ffmpeg.wasm) ve videoların üzerine küçük bir
 indirme düğmesi koyar.
 
-Chrome Web Mağazası'nda yayınlanmaz; "Paketlenmemiş öğe yükle" ile kullanılır.
+Chrome Web Mağazası'nda yayınlanmaz, addons.mozilla.org'da listelenmez: Chrome'da
+"Paketlenmemiş öğe yükle" ile, Firefox'ta sürümlerdeki imzalı `.xpi` ile kurulur.
 DRM'li içerik (Netflix, Disney+, YouTube Premium …) teknik olarak indirilemez ve
 kapsam dışıdır; YouTube ve canlı yayınlar desteklenmez.
 
@@ -22,6 +23,8 @@ Görseller demo fixture sayfasından üretilir (`npm run screenshots`), gerçek 
 
 ## Kurulum
 
+### Chrome
+
 1. [Releases](https://github.com/talhauncu/video-downloader-extension/releases) sayfasından son
    `video-downloader-<sürüm>.zip`'i indirip açın ya da bu repoyu klonlayın.
 2. `chrome://extensions` sayfasını açın, sağ üstten **Geliştirici modu**'nu açın.
@@ -33,6 +36,21 @@ Eklentinin kimliği sabittir (`dnbedddlffjlpbmgpdmnegngpkejbbjn`, `manifest.json
 içindeki `key` sayesinde); klasörü taşısanız da ayarlar, geçmiş ve kısayol
 korunur. Eşleşen özel anahtar `~/.config/video-downloader-extension/key.pem`
 dosyasındadır ve yalnızca `.crx` paketlemek için gerekir; repoda değildir.
+
+### Firefox
+
+Firefox 140 ya da sonrası.
+
+1. [Releases](https://github.com/talhauncu/video-downloader-extension/releases) sayfasından son
+   `video-downloader-<sürüm>.xpi`'yi indirin (addons.mozilla.org imzalı, orada listelenmez).
+2. Firefox'ta açın (bir pencereye sürükleyin ya da **Dosya → Dosya Aç**) ve kurulumu onaylayın.
+   Firefox kendiliğinden güncellemez: sonraki sürümün `.xpi`'sini aynı yolla kurun.
+
+İmzasız denemek için: `npm run build:firefox`, sonra `about:debugging` → **Bu Firefox** →
+**Geçici Eklenti Yükle** → `dist/firefox/manifest.json` (yeniden başlatınca gider).
+
+Firefox'ta çok iş parçacıklı hızlı H.264 dönüştürme yoktur (Firefox eklenti sayfalarını
+izole etmez); dönüştürme tek iş parçacıklı çekirdekle yapılır.
 
 ## Kullanım
 
@@ -86,7 +104,7 @@ sınırı.
 |---|---|
 | `webRequest`, tüm sitelere erişim | Sayfanın yaptığı medya isteklerini (MP4, playlist, segment, altyazı) ve boyutlarını görmek. |
 | `declarativeNetRequest` | Eklentinin kendi isteklerine oynatıcının Referer/Origin'ini eklemek; çoğu medya sunucusu bunu ister. Kurallar geçicidir. |
-| `offscreen` | Uzun akış indirmeleri, şifre çözme, remux ve ffmpeg.wasm'ı service worker dışında çalıştırmak. |
+| `offscreen` | Uzun akış indirmeleri, şifre çözme, remux ve ffmpeg.wasm'ı service worker dışında çalıştırmak (yalnızca Chrome; Firefox'ta arka plan sayfası bunu kendisi yapar). |
 | `downloads` | Dosyaları kaydetmek ve klasörde göstermek. |
 | `notifications` | Bir akış indirmesi bitince ya da başarısız olunca haber vermek (ayarlardan kapatılabilir). |
 | `storage` | Ayarlar, sekme listesi, iş durumu ve geçmiş. |
@@ -113,18 +131,19 @@ Gereksinimler: Node 22+ (CI 24 kullanır); test medyasını yeniden üretmek iç
 
 ```bash
 npm install
-npx playwright install chromium --no-shell
+npx playwright install chromium firefox --no-shell
 ```
 
 | Komut | Ne yapar |
 |---|---|
 | `npm test` | Unit testler (`node --test`) |
-| `npm run e2e` | Playwright e2e testleri: eklenti gerçek Chromium'da, yerel fixture sunucusuna karşı |
+| `npm run e2e` | Playwright e2e testleri: eklenti gerçek Chromium'da (`test/e2e`), Firefox sürümü Firefox'ta (`test/e2e-firefox`), yerel fixture sunucusuna karşı |
 | `npm run lint` | ESLint ve Prettier denetimi |
 | `npm run typecheck` | `src/` üzerinde `tsc --checkJs` |
 | `npm run check:vendor` | `src/vendor/` dosyalarının npm paketlerindekilerle birebir aynı olduğunu denetler (SHA-256) |
 | `npm run format` | Prettier, yazarak |
-| `npm run package` | `dist/video-downloader-<sürüm>.zip` üretir (Releases'taki paket) |
+| `npm run package` | `dist/video-downloader-<sürüm>.zip` üretir (Releases'taki paket); `-- --firefox` ile Firefox zip'ini de |
+| `npm run build:firefox` | Firefox sürümünü `dist/firefox/` içinde üretir |
 | `npm run fixtures` | `test/fixtures/media` altındaki örnek medyayı ffmpeg ile yeniden üretir |
 | `npm run screenshots` | `docs/images/` altındaki README görsellerini yeniden üretir (demo fixture sayfası, İngilizce ve Türkçe; GIF için ffmpeg gerekir) |
 | `npm run serve` | Elle deneme için `http://127.0.0.1:8787` adresinde fixture sunucusu |
@@ -150,7 +169,7 @@ katkı kuralları [CONTRIBUTING.md](CONTRIBUTING.md), değişiklikler
 | 5c | Vimeo: vimeo.com'da ve başka sitelere gömülü oynatıcılarda en büyük MP4 ya da HLS master | ✅ |
 | 6a | İndirme sırası (aynı anda N iş), bildirimler, İndirilenler içinde klasör, yarıda kalan akışın devamı | ✅ |
 | 6b | Performans: H.264 dönüştürmede çok iş parçacıklı ffmpeg; düz dosyalar da dönüştürülüyor ve altyazısı gömülüyor | ✅ |
-| 6c | Firefox | |
+| 6c | Firefox: aynı özellikler Firefox 140+'da, sürümlerde imzalı `.xpi` | ✅ |
 
 ## Hızlı kontrol listesi (her sürümde elden geçirilir)
 

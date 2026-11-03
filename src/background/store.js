@@ -133,9 +133,20 @@ export async function count(tabId) {
   return (await list(tabId)).length;
 }
 
-export function clear(tabId) {
+/**
+ * Empties a tab's list, or with `before` (a time, ms since the epoch) drops
+ * only the entries last seen before it. A navigation passes its start: in
+ * Firefox the new page's first reports can reach the background before the
+ * page request does, and must survive the clear.
+ */
+export function clear(tabId, before = Infinity) {
   return serialized(tabId, async () => {
     await loadAll();
+    const items = cache.get(tabId);
+    if (items && before !== Infinity) {
+      for (const [key, item] of items) if ((item.lastSeen ?? item.firstSeen) < before) items.delete(key);
+      if (items.size) return persist(tabId);
+    }
     cache.delete(tabId);
     await chrome.storage.session.remove(PREFIX + tabId);
   });
