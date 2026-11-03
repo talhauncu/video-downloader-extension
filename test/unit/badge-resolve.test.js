@@ -239,3 +239,19 @@ test('a player without a URL (srcObject, "mse:") resolves through the post code 
   assert.equal(resolveVideo([a, b], { src: 'mse:' }, { tabUrl: TAB }).status, 'unmatched');
   assert.equal(resolveVideo([a, b], { src: '' }, { tabUrl: TAB }).reason, 'no-source');
 });
+
+test('a player without a post code: the stream length counts when the entry has none; equal lengths are told apart by shape', () => {
+  const TAB = 'https://www.facebook.com/';
+  const fb = (code, o) => it({ kind: 'dash', site: 'facebook', code, url: `https://www.facebook.com/watch/?v=${code}#dash`, ...o });
+  const long = fb('1000000000000601', { stream: { type: 'dash', duration: 179, videos: [], audios: [] } });
+  const tall = fb('1000000000000602', { duration: 15, width: 576, height: 1024 });
+  const square = fb('1000000000000603', { duration: 15, width: 1080, height: 1080 });
+  const items = [long, tall, square];
+  // Only the manifest knows this one's length.
+  assert.equal(resolveVideo(items, { src: 'mse:', duration: 179 }, { tabUrl: TAB }).item.id, long.id);
+  // Two 15 s clips: the player's frame (scaled down) is square.
+  assert.equal(resolveVideo(items, { src: 'mse:', duration: 15, width: 720, height: 720 }, { tabUrl: TAB }).item.id, square.id);
+  assert.equal(resolveVideo(items, { src: 'mse:', duration: 15, width: 360, height: 640 }, { tabUrl: TAB }).item.id, tall.id);
+  // Same length, unknown frame: no guess.
+  assert.equal(resolveVideo(items, { src: 'mse:', duration: 15 }, { tabUrl: TAB }).status, 'unmatched');
+});

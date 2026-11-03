@@ -45,15 +45,15 @@ export default {
         });
         continue;
       }
-      // Only the DASH manifest: video and audio tracks, merged after download.
-      if (item.dashManifest) {
+      // Only the DASH manifest (inline, or its address): video and audio tracks, merged after download.
+      if (item.dashManifest || item.dashManifestUrl) {
         out.push({
           entry: {
             ...base,
             key: `facebook:${item.id}:dash`,
-            url: `https://www.facebook.com/watch/?v=${item.id}#dash`,
+            url: item.dashManifest ? `https://www.facebook.com/watch/?v=${item.id}#dash` : item.dashManifestUrl,
             kind: KIND.DASH,
-            manifestText: item.dashManifest,
+            ...(item.dashManifest ? { manifestText: item.dashManifest } : {}),
             size: null,
             contentType: 'application/dash+xml',
             // A later report may bring the MP4: this entry then hides behind it.

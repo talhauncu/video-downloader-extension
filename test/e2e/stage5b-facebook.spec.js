@@ -41,8 +41,8 @@ async function openFb(route) {
   await page.evaluate(() => window.loadApi());
   await expect(page.locator('body')).toHaveAttribute('data-api-loaded', 'true');
   const tabId = await ext.tabIdOf(page);
-  // 501, 502, 503 (its manifest, then its MP4) and 504 (manifest only).
-  await expect.poll(async () => (await stored(tabId)).filter((it) => it.site === 'facebook').length).toBe(5);
+  // 501, 502, 503 (its manifest, then its MP4), 504 (manifest only) and 505 (only its manifest's address).
+  await expect.poll(async () => (await stored(tabId)).filter((it) => it.site === 'facebook').length).toBe(6);
   return { page, tabId };
 }
 
@@ -57,8 +57,12 @@ test('a watch page: one entry per video, the open one first; player tracks and a
   await expect(main.locator('.badge.here')).toBeVisible();
   await expect(main.locator('.name')).toHaveText('Bir Sayfa · İlk video');
   // The other three videos are neighbours; the reel shows its MP4, not its manifest.
-  await expect(popup.locator('#others-list > .item[data-reason="neighbour"]')).toHaveCount(3);
-  await expect(popup.locator('#others-list > .item[data-site="facebook"][data-kind="dash"] .name')).toHaveText('Manifest Sayfası');
+  await expect(popup.locator('#others-list > .item[data-reason="neighbour"]')).toHaveCount(4);
+  // 504 and 505 (manifest only) are named by their owner.
+  await expect(popup.locator('#others-list > .item[data-site="facebook"][data-kind="dash"] .name')).toHaveText([
+    'Manifest Sayfası',
+    'Manifest Sayfası',
+  ]);
   await expect(popup.locator('.item[data-hidden="true"]')).toHaveCount(0);
   const items = await stored(tabId);
   expect(items.find((it) => it.key === `facebook:${ID(3)}`).url).toBe(`${server.url}/media/dash-base/DASH_360.mp4?fb=hd`);
@@ -67,6 +71,10 @@ test('a watch page: one entry per video, the open one first; player tracks and a
   const reel = items.find((it) => it.key === `facebook:${ID(3)}`);
   expect([reel.duration, reel.title, reel.width]).toEqual([4, 'Reels Hesabı', 640]);
   expect(items.find((it) => it.key === `facebook:${ID(4)}:dash`).duration).toBe(4);
+  // 505 names only its manifest's address: the entry is that address; its owner's name came with 504's data.
+  const byUrl = items.find((it) => it.key === `facebook:${ID(5)}:dash`);
+  expect([byUrl.url, byUrl.manifestText ?? null]).toEqual([`${server.url}/media/dash-base/DASHPlaylist.mpd?fb=url`, null]);
+  await expect.poll(async () => (await stored(tabId)).find((it) => it.key === `facebook:${ID(5)}:dash`).title).toBe('Manifest Sayfası');
 
   const before = await ext.existingDownloadIds();
   await main.locator('.download').click();
@@ -78,6 +86,7 @@ test('a watch page: one entry per video, the open one first; player tracks and a
 });
 
 test("a feed: each player's button downloads the video its link names; a manifest-only video is merged", async () => {
+  test.setTimeout(120000); // five downloads, three of them merged
   const { page } = await openFb('/');
   const badge = page.locator('[data-vdl-badge][data-visible] .btn');
   const hoverPost = async (id) => {
@@ -114,6 +123,15 @@ test("a feed: each player's button downloads the video its link names; a manifes
   await badge.click();
   const [merged] = await ext.waitForNewCompletedDownloads(before, 1, 60000);
   expect(moovSummary(await readFile(merged.filename)).traks).toBe(2);
+  await away();
+  // /watch/?v=<id>: the manifest is read from its address, then merged.
+  await hoverPost(ID(5));
+  const before5 = await ext.existingDownloadIds();
+  await badge.click();
+  // Two qualities in that manifest: the button opens its menu; take the first (best).
+  await page.locator('[data-vdl-badge] .menu[data-open] button').first().click();
+  const [fromUrl] = await ext.waitForNewCompletedDownloads(before5, 1, 60000);
+  expect(moovSummary(await readFile(fromUrl.filename)).traks).toBe(2);
   await page.close();
 });
 

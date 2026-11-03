@@ -15,6 +15,7 @@
       [ID(2), `/birsayfa/videos/kisa-baslik/${ID(2)}/`],
       [ID(3), `/reel/${ID(3)}`],
       [ID(4), `/watch/?v=${ID(4)}&ref=feed`],
+      [ID(5), `/watch/?v=${ID(5)}`],
     ];
     for (const [id, link] of posts) {
       const article = document.createElement('article');
@@ -53,11 +54,12 @@
       story(ID(1), 'Bir Sayfa', 'İlk video\nikinci satır', { browser_native_hd_url: `${o}/media/sample.mp4?fb=hd`, browser_native_sd_url: `${o}/media/sample.webm?fb=sd`, playable_duration_in_ms: 4000, width: 320, height: 180 }),
     ] } } } } }]]] });
     // A reel as Facebook sends it now: the video object carries its id, length and
-    // owner; the manifest sits deeper (videoDeliveryResponseFragment); no post text.
+    // owner id; the manifest sits deeper (videoDeliveryResponseFragment); no post
+    // text. The owner's name comes later, in a User object of another response.
     const reel = document.createElement('script');
     reel.type = 'application/json';
     reel.textContent = JSON.stringify({ require: [[0, 0, 0, [{ __bbox: { result: { data: { video: { creation_story: { attachments: [{ media: {
-      __typename: 'Video', id: ID(3), length_in_second: 4, width: 640, height: 360, owner: { __typename: 'User', id: '42', name: 'Reels Hesabı' },
+      __typename: 'Video', id: ID(3), length_in_second: 4, width: 640, height: 360, owner: { __typename: 'User', id: '42' },
       videoDeliveryResponseFragment: { videoDeliveryResponseResult: { dash_manifests: [{ manifest_xml: mpd }] } } } }] } } } } } }]]] });
     document.head.appendChild(reel);
     document.head.appendChild(initial);
