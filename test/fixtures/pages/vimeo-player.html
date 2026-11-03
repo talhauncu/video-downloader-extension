@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"><title>Vimeo Benzeri Oynatıcı</title>
+  <style>html, body { margin: 0; background: #000; } video { width: 100vw; height: 100vh; display: block; }</style>
+</head>
+<body>
+  <video muted playsinline></video>
+  <script>
+    // Like player.vimeo.com/video/<id>: the player document carries its
+    // configuration inline (window.playerConfig = {…}). The video id is the
+    // last path segment; the files depend on it.
+    const id = location.pathname.split('/').filter(Boolean).pop();
+    const configs = {
+      // Only the HLS master (most videos now): an H.264 one and a generic one.
+      76979871: { title: 'Akış videosu', owner: 'Bir Stüdyo', files: { progressive: [], hls: { default_cdn: 'fastly_skyfire', cdns: {
+        fastly_skyfire: { avc_url: '/media/hls-audio/master.m3u8?v=avc', url: '/media/hls-audio/master.m3u8?v=any' } } } } },
+      // Progressive MP4s with audio, and the master too.
+      11111111: { title: 'Dosyalı {video}', owner: 'Başka Kanal', files: {
+        progressive: [{ url: '/media/sample.webm?v=360', width: 640, height: 360, fps: 25 }, { url: '/media/sample.mp4?v=720', width: 1280, height: 720, fps: 25 }],
+        hls: { default_cdn: 'akfire', cdns: { akfire: { url: '/media/hls-fmp4/master.m3u8?v=b' } } } } },
+    };
+    const c = configs[id];
+    if (c) {
+      const config = { request: { files: c.files, timestamp: 1 }, video: { id: Number(id), title: c.title, duration: 4, width: 1280, height: 720, owner: { name: c.owner } } };
+      const script = document.createElement('script');
+      // Braces inside strings (the title) must not end the object early.
+      script.textContent = `window.playerConfig = ${JSON.stringify(config)}; if (window.playerConfig) { window.vimeoReady = true; }`;
+      document.head.appendChild(script);
+    }
+    const video = document.querySelector('video');
+    const ms = new MediaSource();
+    video.src = URL.createObjectURL(ms);
+    ms.addEventListener('sourceopen', () => { ms.duration = 4; document.body.dataset.ready = 'true'; });
+  </script>
+</body>
+</html>

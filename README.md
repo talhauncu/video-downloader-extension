@@ -47,7 +47,7 @@ folder.
   downloads at once, several open a menu. While a stream downloads the button
   shows a progress ring; hovering it shows the file, progress and time left,
   and turns it into a cancel button (two clicks). Ads get no button.
-- **Sites with an extractor** (Instagram, X, Facebook): the list shows one complete file
+- **Sites with an extractor** (Instagram, X, Facebook, Vimeo — also its players embedded in other sites): the list shows one complete file
   per video (video and audio together) titled with the user and the post's
   text, instead of the player's separate stream pieces; the in-page button
   downloads the post it sits in.
@@ -82,7 +82,7 @@ in-page button (on hover, always, off; hidden sites) · file name template
 | `downloads` | Save files and show them in their folder. |
 | `storage` | Settings, the per-tab list, job state and history. |
 | `tabs`, `activeTab` | Know which tab a request belongs to and read its title for file names. |
-| `scripting` | Run the site extractors on their sites (Instagram on instagram.com, X on x.com and twitter.com, Facebook on facebook.com). |
+| `scripting` | Run the site extractors on their sites (Instagram on instagram.com, X on x.com and twitter.com, Facebook on facebook.com, Vimeo on vimeo.com and in its embedded players). |
 
 ## Responsible use
 
@@ -138,7 +138,7 @@ on staged files. There is no build step: the files are loaded as they are.
 | 4b | Site extractor architecture (definitions under `src/sites/`, guide in `docs/sites.md`); README images | ✅ |
 | 5a | X (Twitter): one complete MP4 per video and GIF, the post's text as the title | ✅ |
 | 5b | Facebook: Reels, Watch and videos in posts as one complete MP4 (or merged DASH) each | ✅ |
-| 5c | Vimeo | |
+| 5c | Vimeo: on vimeo.com and in players embedded in other sites, the largest MP4 or the HLS master | ✅ |
 | 6 | Job queue and resume, performance, Firefox | |
 
 ## License

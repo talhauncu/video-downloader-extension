@@ -14,4 +14,7 @@ interface Window {
   __vdlFacebookVersion?: number;
   __vdlFacebookHooked?: boolean;
   __vdlFacebookStats?: Record<string, unknown>;
+  __vdlVimeoVersion?: number;
+  __vdlVimeoHooked?: boolean;
+  __vdlVimeoStats?: Record<string, unknown>;
 }

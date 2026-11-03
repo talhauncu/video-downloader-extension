@@ -46,7 +46,7 @@ dosyasındadır ve yalnızca `.crx` paketlemek için gerekir; repoda değildir.
   kalite hemen iner, birden çoksa menü açılır. Akış inerken düğme ilerleme
   halkası gösterir; üzerine gelince dosya, ilerleme ve kalan süre görünür,
   düğme iptale döner (iki tıklama). Reklamlarda düğme çıkmaz.
-- **Çıkarıcısı olan siteler** (Instagram, X, Facebook): listede oynatıcının ayrı akış
+- **Çıkarıcısı olan siteler** (Instagram, X, Facebook, Vimeo — başka sitelere gömülü oynatıcıları da): listede oynatıcının ayrı akış
   parçaları yerine her video için tek, tam bir dosya (görüntü ve ses birlikte)
   görünür; adı kullanıcı ve gönderinin metni olur. Video üstü düğme,
   bulunduğu gönderiyi indirir.
@@ -83,7 +83,7 @@ siteler) · dosya adı şablonu (`{site}` `{title}` `{date}` `{time}` `{quality}
 | `downloads` | Dosyaları kaydetmek ve klasörde göstermek. |
 | `storage` | Ayarlar, sekme listesi, iş durumu ve geçmiş. |
 | `tabs`, `activeTab` | İsteğin hangi sekmeye ait olduğunu bilmek, dosya adı için başlığı okumak. |
-| `scripting` | Site çıkarıcılarını kendi sitelerinde çalıştırmak (instagram.com'da Instagram, x.com ve twitter.com'da X, facebook.com'da Facebook). |
+| `scripting` | Site çıkarıcılarını kendi sitelerinde çalıştırmak (instagram.com'da Instagram, x.com ve twitter.com'da X, facebook.com'da Facebook, vimeo.com'da ve gömülü oynatıcılarında Vimeo). |
 
 ## Sorumlu kullanım
 
@@ -139,7 +139,7 @@ katkı kuralları [CONTRIBUTING.md](CONTRIBUTING.md), değişiklikler
 | 4b | Site çıkarıcı mimarisi (`src/sites/` altında tanımlar, rehber `docs/sites.md`); README görselleri | ✅ |
 | 5a | X (Twitter): her video ve GIF için tek, tam bir MP4; başlık gönderinin metninden | ✅ |
 | 5b | Facebook: Reels, Watch ve gönderilerdeki videolar, her biri tek, tam bir MP4 (ya da birleştirilmiş DASH) | ✅ |
-| 5c | Vimeo | |
+| 5c | Vimeo: vimeo.com'da ve başka sitelere gömülü oynatıcılarda en büyük MP4 ya da HLS master | ✅ |
 | 6 | İş kuyruğu ve kaldığı yerden devam, performans, Firefox | |
 
 ## Hızlı kontrol listesi (her sürümde elden geçirilir)
@@ -150,6 +150,7 @@ katkı kuralları [CONTRIBUTING.md](CONTRIBUTING.md), değişiklikler
 - Altyazılı bir film/dizi → Türkçe kutucuk işaretli gelir, `-tr.srt` videonun yanına iner, VLC'de görünür.
 - Dublajlı + orijinal sesli bir film → ses menüsünden "English" seçilir, inen MP4 orijinal sesle oynar.
 - Ayarlardan arayüz dili English → açılır pencere, düğme ve ayarlar İngilizce.
+- Vimeo'da bir video ve başka bir sitede gömülü bir Vimeo oynatıcısı → "Vimeo" kartı, kanal ve başlıkla; düğme o oynatıcının videosunu indirir.
 - Facebook'ta bir Reel ve bir Watch videosu → "Facebook" kartı, sahibi ve metinle; video üstü düğme o videoyu sesli indirir.
 - X'te videolu bir gönderi → listede "X (Twitter)" kartı, @kullanıcı ve metinle; video üstü düğme o gönderiyi sesli tek MP4 olarak indirir; GIF de iner.
 

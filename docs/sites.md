@@ -37,6 +37,9 @@ export default {
   version: 1,                          // = VERSION in main.js; bump both together
   globals: { hooked: '__vdlExampleHooked', version: '__vdlExampleVersion', stats: '__vdlExampleStats' },
   fetchContext: 'page',                // Referer for its URLs: 'page' (the tab) or 'frame' (the reporting frame)
+  // Optional: run in every frame (players embedded in other sites' pages).
+  // Use with fetchContext: 'frame'; entries then keep the reporting frame.
+  // allFrames: true,
   // Optional: the entry a captured player chunk belongs to. The list hides the
   // chunk behind that entry once it exists (and only then).
   chunkOf(url) {
@@ -77,7 +80,7 @@ chunks of the same video are hidden behind them (`chunkOf`, or Instagram's
 `hidden` track tags), a captured copy of the entry's own file is hidden too,
 and the in-page badge matches feed videos to them by `code` (a post's
 shortcode or id, read from links like `/p/CODE/` or `/user/status/ID` around
-the video) or duration. A new link shape goes into `POST_LINKS` in
+the video), the embedded player's own frame URL, or duration. A new link shape goes into `POST_LINKS` in
 `src/content/badge.js`. An entry may itself set `coveredBy` (Facebook's
 manifest-only entry names the MP4 entry of the same video): it hides once
 that entry exists.

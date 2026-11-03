@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"><title>Gömülü Vimeo Videolu Yazı</title>
+  <style>iframe { width: 480px; height: 270px; border: 0; display: block; margin: 24px auto; }</style>
+</head>
+<body>
+  <h1>Bir blog yazısı</h1>
+  <script>
+    // Two embedded players of the same length from the player host (?player=<origin>).
+    const player = new URLSearchParams(location.search).get('player');
+    for (const id of ['76979871', '11111111']) {
+      const frame = document.createElement('iframe');
+      frame.src = `${player}/pages/vimeo-player.html/video/${id}?h=abc123`;
+      frame.dataset.id = id;
+      document.body.appendChild(frame);
+    }
+  </script>
+</body>
+</html>

@@ -5,6 +5,7 @@ import { SITES, BRIDGE_SCRIPT, siteById, siteForUrl, siteChunkKey, validateSite,
 import instagram, { pickBestVersion } from '../../src/sites/instagram/site.js';
 import twitter, { pickBestVariant, sizeFromUrl } from '../../src/sites/twitter/site.js';
 import facebook from '../../src/sites/facebook/site.js';
+import vimeo, { pickBestProgressive } from '../../src/sites/vimeo/site.js';
 
 const ROOT = new URL('../../', import.meta.url);
 const valid = () => ({
@@ -174,4 +175,36 @@ test('facebook.toItems: HD, else SD, else the DASH manifest (covered by the MP4 
   );
   assert.equal(siteForUrl('https://www.facebook.com/reel/123456789')?.id, 'facebook');
   assert.equal(siteForUrl('https://m.facebook.com/watch/?v=1')?.id, 'facebook');
+});
+
+test('vimeo.toItems: the largest progressive file, else the HLS master; runs in frames with the frame context', () => {
+  assert.equal(vimeo.allFrames, true);
+  assert.equal(vimeo.fetchContext, 'frame');
+  const progressive = [
+    { url: 'https://vod.test/360.mp4', width: 640, height: 360, fps: 25 },
+    { url: 'https://vod.test/1080.mp4', width: 1920, height: 1080, fps: 25 },
+    { url: 'https://vod.test/720.mp4', width: 1280, height: 720, fps: 25 },
+  ];
+  assert.equal(pickBestProgressive(progressive).url, 'https://vod.test/1080.mp4');
+  const out = vimeo.toItems(
+    {
+      items: [
+        { id: '76979871', title: 'Bir film', owner: 'Bir Stüdyo', duration: 62, progressive, hls: 'https://vod.test/master.m3u8' },
+        { id: '11111111', title: 'Yalnızca akış', progressive: [], hls: 'https://vod.test/other.m3u8', width: 1280, height: 720 },
+        { id: '22222222', progressive: [] },
+      ],
+    },
+    { pageUrl: 'https://vimeo.com/76979871' },
+  );
+  assert.equal(out.length, 2);
+  assert.deepEqual(
+    [out[0].entry.key, out[0].entry.kind, out[0].entry.code, out[0].entry.title, out[0].entry.width, out[0].sizeFrom],
+    ['vimeo:76979871', 'video', '76979871', 'Bir Stüdyo · Bir film', 1920, 'https://vod.test/1080.mp4'],
+  );
+  assert.deepEqual(
+    [out[1].entry.key, out[1].entry.kind, out[1].entry.url, out[1].describe],
+    ['vimeo:11111111:hls', 'hls', 'https://vod.test/other.m3u8', true],
+  );
+  assert.equal(siteForUrl('https://player.vimeo.com/video/76979871')?.id, 'vimeo');
+  assert.ok(validateSite({ ...valid(), allFrames: 'yes' }).some((e) => e.includes('allFrames')));
 });

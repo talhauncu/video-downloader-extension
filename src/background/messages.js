@@ -309,7 +309,10 @@ const handlers = {
     // The reporting tab's own URL: the recorded page can lag behind (back/forward cache, prerender).
     const page = sender.tab.url ?? pageUrlOf(tabId) ?? pageUrl ?? null;
     let changed = false;
+    // A report from an embedded player (an iframe): its entries are fetched in that frame's context.
+    const frameUrl = site.fetchContext === 'frame' && sender.frameId ? (sender.url ?? null) : null;
     for (const { entry, sizeFrom, describe } of site.toItems({ items }, { pageUrl: page })) {
+      if (frameUrl && !entry.frameUrl) entry.frameUrl = frameUrl;
       const result = await store.upsert(tabId, entry);
       changed = changed || result;
       if (!result) continue;
