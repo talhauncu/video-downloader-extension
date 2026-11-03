@@ -3,6 +3,12 @@
 All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow semver.
 
+## [0.9.1] - 2026-11-03
+
+### Fixed
+- File names named the wrong site ("google.com-…" for a post opened from search results) when the page had opened without a page request in the tab: restored from the back/forward cache or prerendered by the browser. The extension now follows the tab's address as it changes, and file names take the site from the tab's current address.
+- A page restored from the back/forward cache lists its videos again (the list was cleared when the page was left).
+
 ## [0.9.0] - 2026-11-03
 
 ### Added

@@ -439,7 +439,13 @@ export async function startStreamJob({ tabId, id, variantUrl, audioUrl, videoRep
   // Subtitles first: small, and their signed URLs are freshest now.
   const tracks = [...fileSubs, ...media.filter((t) => t.role === 'subtitle'), ...media.filter((t) => t.role !== 'subtitle')];
   const quality = qualityLabel(item, { variantUrl, videoRepId });
-  const filename = buildFilename({ pageUrl, title: item.title ?? tab?.title, ext: 'mp4', template: settings.filenameTemplate, quality });
+  const filename = buildFilename({
+    pageUrl: tab?.url ?? pageUrl,
+    title: item.title ?? tab?.title,
+    ext: 'mp4',
+    template: settings.filenameTemplate,
+    quality,
+  });
   return launch({ tabId, item, itemId: id, tracks, pageUrl, filename, stem: filename.replace(/\.mp4$/, ''), settings });
 }
 
@@ -457,7 +463,8 @@ export async function startSubtitleJob({ tabId, item, choices, filename = null, 
   const tracks = choices.map((c) => subtitleTrackFor(c, items)).filter(Boolean);
   if (!tracks.length) throw new Error(t('errNoSubtitles'));
   const stem = (
-    filename ?? buildFilename({ pageUrl, title: item.title ?? tab?.title, ext: 'mp4', template: settings.filenameTemplate })
+    filename ??
+    buildFilename({ pageUrl: tab?.url ?? pageUrl, title: item.title ?? tab?.title, ext: 'mp4', template: settings.filenameTemplate })
   ).replace(/\.[a-z0-9]+$/i, '');
   const display =
     tracks.length === 1

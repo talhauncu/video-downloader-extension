@@ -199,7 +199,14 @@ export async function downloadItem({ tabId, id }) {
   const ext = extensionOf(item.url) || DEFAULT_EXT[item.kind];
   const { filenameTemplate } = await getSettings();
   const quality = item.height ? `${item.height}p` : null;
-  const filename = buildFilename({ pageUrl, title: item.title ?? tab?.title, ext, template: filenameTemplate, quality });
+  // {site}: the page open in the tab now (an entry's recorded page can be an earlier one).
+  const filename = buildFilename({
+    pageUrl: tab?.url ?? pageUrl,
+    title: item.title ?? tab?.title,
+    ext,
+    template: filenameTemplate,
+    quality,
+  });
 
   const job = {
     url: item.url,

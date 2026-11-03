@@ -233,7 +233,8 @@ export async function startServer({
     const headers = {
       'content-type': type,
       'accept-ranges': 'bytes',
-      'cache-control': 'no-store',
+      // ?cacheable: a page the back/forward cache may keep (no-store rules it out).
+      'cache-control': url.searchParams.has('cacheable') ? 'no-cache' : 'no-store',
       'access-control-allow-origin': '*',
     };
 

@@ -73,6 +73,12 @@ test/             unit tests (node:test), e2e tests (Playwright), fixtures (loca
 - `capture.js` classifies responses by content type and URL
   (`media-url.js`): progressive files, HLS, DASH, segments, subtitles. Segment
   requests and byte ranges collapse into one entry per stream.
+- A new page in the tab (a `main_frame` request) clears the tab's list. The
+  tab's page address also follows `tabs.onUpdated`: a page restored from the
+  back/forward cache or a prerendered one opens without a page request, and
+  single-page apps change the address in place (the list is kept then). After
+  a back/forward cache restore the DOM scanner reports the page again. File
+  names take `{site}` from the tab's current address.
 - Each request remembers its **frame**: many sites play their videos in a third-party player iframe
   and their media servers expect that iframe as the Referer. Manifest reads,
   segment downloads, HEAD size checks and direct downloads all use the
