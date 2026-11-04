@@ -75,10 +75,11 @@ single-threaded core.
   downloads the post it sits in.
 - **Toolbar indicator**: while downloads run, the icon shows the overall
   progress on every tab; downloads go on when their page is reloaded or closed.
-- **Queue and notifications**: at most two stream downloads (HLS/DASH) run at
-  once (setting: 1–4); the others wait as **Queued** and start in turn. When
-  one ends, a system notification says so (click it to show the file). A
-  stream that fails keeps what it downloaded until the browser closes:
+- **Queue and notifications**: at most two downloads the extension runs itself
+  (streams, and plain files it converts or embeds subtitles into) go at once
+  (setting: 1–4); the others wait as **Queued** and start in turn. When one
+  ends, a system notification says so (click it to show the file). A download
+  that fails keeps what it downloaded for an hour in the same browser session:
   downloading it again continues from there.
 - **Subtitles**: HLS and DASH subtitle tracks, `<track>`s and subtitle files
   on the page show up as chips; the preferred languages are ticked in advance
@@ -109,7 +110,7 @@ once · notifications · history size.
 | `declarativeNetRequest` | Send the player's Referer/Origin with the extension's own requests; many media servers require it. Rules are temporary. |
 | `offscreen` | Run long stream downloads, decryption, remuxing and ffmpeg.wasm outside the service worker (Chrome only; Firefox's background page does this itself). |
 | `downloads` | Save files and show them in their folder. |
-| `notifications` | Say when a stream download is done or has failed (can be turned off in the settings). |
+| `notifications` | Say when a download the extension runs is done or has failed (can be turned off in the settings). |
 | `storage` | Settings, the per-tab list, job state and history. |
 | `tabs`, `activeTab` | Know which tab a request belongs to and read its title for file names. |
 | `scripting` | Run the site extractors on their sites (Instagram on instagram.com, X on x.com and twitter.com, Facebook on facebook.com, Vimeo on vimeo.com and in its embedded players). |

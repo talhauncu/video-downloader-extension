@@ -3,6 +3,11 @@
 All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow semver.
 
+## [0.14.1] - 2026-11-04
+
+### Fixed
+- Settings texts left behind by 0.13.0: "Downloads at once" counts plain files the extension downloads itself (with conversion or subtitle embedding on) too, and its hint no longer says plain files always go to Chrome (also wrong in Firefox); the notification hint covers those downloads as well. The README says the same, and that a failed download is kept for an hour.
+
 ## [0.14.0] - 2026-11-04
 
 ### Added
