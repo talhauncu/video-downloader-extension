@@ -70,11 +70,12 @@ izole etmez); dönüştürme tek iş parçacıklı çekirdekle yapılır.
   bulunduğu gönderiyi indirir.
 - **Araç çubuğu göstergesi:** indirme sürerken simge tüm sekmelerde toplam
   ilerlemeyi gösterir; sayfa yenilense ya da kapansa da indirme sürer.
-- **Sıra ve bildirimler:** aynı anda en çok iki akış indirmesi (HLS/DASH)
+- **Sıra ve bildirimler:** eklentinin kendisi yürüttüğü indirmelerden (akışlar,
+  dönüştürülen ya da altyazısı gömülen düz dosyalar) aynı anda en çok ikisi
   çalışır (ayar: 1–4); diğerleri **Sırada** bekler ve sırayla başlar. Biri
   bitince sistem bildirimi gelir (tıklayınca dosyayı gösterir). Yarıda kalan
-  bir akış, tarayıcı kapanana kadar indirdiklerini saklar: yeniden
-  indirildiğinde kaldığı yerden sürer.
+  bir indirme, aynı tarayıcı oturumunda bir saat boyunca indirdiklerini saklar:
+  yeniden indirildiğinde kaldığı yerden sürer.
 - **Altyazılar:** HLS ve DASH altyazı izleri, sayfadaki `<track>`'lar ve
   altyazı dosyaları kutucuk olarak görünür; tercih edilen diller önceden
   işaretlidir, videonun yanına `<ad>-<dil>.srt` (ya da `.vtt`) olarak iner ya da
@@ -106,7 +107,7 @@ sınırı.
 | `declarativeNetRequest` | Eklentinin kendi isteklerine oynatıcının Referer/Origin'ini eklemek; çoğu medya sunucusu bunu ister. Kurallar geçicidir. |
 | `offscreen` | Uzun akış indirmeleri, şifre çözme, remux ve ffmpeg.wasm'ı service worker dışında çalıştırmak (yalnızca Chrome; Firefox'ta arka plan sayfası bunu kendisi yapar). |
 | `downloads` | Dosyaları kaydetmek ve klasörde göstermek. |
-| `notifications` | Bir akış indirmesi bitince ya da başarısız olunca haber vermek (ayarlardan kapatılabilir). |
+| `notifications` | Eklentinin yürüttüğü bir indirme bitince ya da başarısız olunca haber vermek (ayarlardan kapatılabilir). |
 | `storage` | Ayarlar, sekme listesi, iş durumu ve geçmiş. |
 | `tabs`, `activeTab` | İsteğin hangi sekmeye ait olduğunu bilmek, dosya adı için başlığı okumak. |
 | `scripting` | Site çıkarıcılarını kendi sitelerinde çalıştırmak (instagram.com'da Instagram, x.com ve twitter.com'da X, facebook.com'da Facebook, vimeo.com'da ve gömülü oynatıcılarında Vimeo). |

@@ -150,8 +150,8 @@ and the keyboard shortcut all use it.
 
 ### Queue, notifications, resume
 
-- **Queue** (`jobs.js`): at most `maxJobs` stream jobs (HLS/DASH, not
-  subtitle-only jobs) are `downloading` at once. A job over the limit is saved
+- **Queue** (`jobs.js`): at most `maxJobs` jobs (HLS/DASH and plain-file
+  jobs, not subtitle-only jobs) are `downloading` at once. A job over the limit is saved
   as `queued`, its offscreen payload under `jobrun:<id>` (session storage), and
   gets no header rule until it starts. `pumpQueue()` starts the oldest queued
   jobs when a slot frees (a job reaches `saving`, fails or is cancelled), when
