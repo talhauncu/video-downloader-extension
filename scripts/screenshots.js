@@ -69,12 +69,10 @@ async function shoot(lang, server) {
     const badge = page.locator('[data-vdl-badge] .btn');
     await badge.waitFor({ state: 'visible' });
     await frame(4);
-    await page.screenshot({ path: path.join(OUT, `badge-${lang}.png`), clip });
     await badge.hover();
     await badge.click();
     await page.locator('[data-vdl-badge] .menu[data-open]').waitFor();
     await frame(5);
-    await page.screenshot({ path: path.join(OUT, `badge-menu-${lang}.png`), clip });
     await page.locator('[data-vdl-badge] .menu button').first().click();
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 + 40);
     for (let i = 0; i < 40; i++) {
