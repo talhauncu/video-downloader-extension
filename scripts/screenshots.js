@@ -105,6 +105,9 @@ async function shoot(lang, server) {
     await options.goto(`chrome-extension://${ext.extensionId}/src/options/options.html`);
     await options.locator('#uiLanguage').waitFor();
     await sleep(500);
+    // Down to the end of the "Downloading" section (queue and notifications), not mid-sentence.
+    const section = await options.locator('section', { has: options.locator('#notify') }).boundingBox();
+    await options.setViewportSize({ width: 820, height: Math.ceil(section.y + section.height + 4) });
     await options.screenshot({ path: path.join(OUT, `options-${lang}.png`) });
   } finally {
     await ext.close();
