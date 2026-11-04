@@ -7,9 +7,17 @@ started is quick; the rules below keep it working on the sites people use.
 
 ```bash
 npm install
-npx playwright install chromium --no-shell
+npx playwright install chromium firefox --no-shell
 npm test && npm run lint && npm run typecheck && npm run check:vendor && npm run e2e
 ```
+
+`npm run e2e` runs the Chromium specs (`test/e2e`) and the Firefox ones
+(`test/e2e-firefox`, on the build in `dist/firefox`). Playwright cannot attach
+to Firefox's extension pages, so those specs reach the background page and
+the popup through Firefox's Remote Debugging Protocol (`test/e2e-firefox/rdp.js`).
+On macOS, Firefox started from a sandboxed app (an editor, an assistant) may
+stop with "Could not find profile folder": it needs to read
+`~/Library/Application Support/Firefox`, so give that app Full Disk Access.
 
 Load the folder as an unpacked extension (`chrome://extensions`, Developer
 mode) to try changes by hand; press **Reload** after editing.

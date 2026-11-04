@@ -5,6 +5,10 @@
 // Long jobs answer immediately and report back with job:progress /
 // job:complete / job:error messages so the service worker may be restarted
 // mid-way without losing the result.
+//
+// Firefox has no offscreen documents: there this module runs inside the
+// background page itself (src/background/offscreen.js imports it), takes its
+// jobs as calls (runLocalJob) and reports through a function (setSink).
 
 import { HlsDownload } from './hls-downloader.js';
 import { DashTrackDownload } from './dash-downloader.js';
@@ -52,7 +56,14 @@ async function opfsDir() {
   return root.getDirectoryHandle('downloads', { create: true });
 }
 
+/** In the background page itself (Firefox): reports go to this function, not to a message. */
+let sink = null;
+export function setSink(fn) {
+  sink = fn;
+}
+
 function notify(type, payload) {
+  if (sink) return void sink(type, payload);
   try {
     chrome.runtime.sendMessage({ type, payload }, () => void chrome.runtime.lastError);
   } catch {
@@ -416,6 +427,7 @@ async function dropStalled(jobId) {
 function runJob(job) {
   const { jobId } = job;
   active.set(jobId, job);
+  keepAwake();
   job
     .run()
     .then(async (completed) => {
@@ -430,6 +442,7 @@ function runJob(job) {
     })
     .then((completed) => {
       active.delete(jobId);
+      keepAwake();
       const files = completed.map((c, index) => {
         // An audio-only fMP4 track is an .m4a as far as players are concerned.
         const ext = c.role === 'audio' && c.ext === 'mp4' ? 'm4a' : c.ext;
@@ -458,6 +471,7 @@ function runJob(job) {
     })
     .catch((error) => {
       active.delete(jobId);
+      keepAwake();
       const cancelled = error?.name === 'AbortError';
       const resumable = !cancelled && job.resumable(error);
       if (resumable) {
@@ -529,11 +543,43 @@ const jobs = {
   }),
 };
 
+/**
+ * Firefox suspends a background page after about 30 s without an extension
+ * event, and with it the downloads running in it (an offscreen document is
+ * never suspended). Pending fetches and plain API calls do not count; an
+ * event does, so while a job runs a storage write every few seconds raises
+ * storage.onChanged here (the background listens to it).
+ */
+const AWAKE_EVERY_MS = 10_000;
+let awakeTimer = null;
+function keepAwake() {
+  if (!sink) return;
+  if (active.size && !awakeTimer) {
+    const touch = () => chrome.storage.session.set({ awake: Date.now() }).catch(() => {});
+    touch();
+    awakeTimer = setInterval(touch, AWAKE_EVERY_MS);
+  }
+  if (!active.size && awakeTimer) {
+    clearInterval(awakeTimer);
+    awakeTimer = null;
+    chrome.storage.session.remove('awake').catch(() => {});
+  }
+}
+
+/** A job called directly, in the background page itself (Firefox). */
+export async function runLocalJob(name, payload) {
+  const job = jobs[name];
+  if (!job) throw new Error(`Unknown offscreen job: ${name}`);
+  return job(payload ?? {});
+}
+
 // No chrome.i18n in an offscreen document: the service worker hands over the
 // messages of the language in use (re-read now and then: the setting may change).
+// In the background page itself the texts are already there (one i18n module).
 let i18nAt = 0;
 let i18nLoading = null;
 function ensureI18n() {
+  if (sink) return Promise.resolve();
   if (!i18nLoading || Date.now() - i18nAt > 10_000) {
     i18nAt = Date.now();
     i18nLoading = chrome.runtime

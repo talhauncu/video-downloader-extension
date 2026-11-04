@@ -155,14 +155,15 @@ async function onResponse(details) {
 }
 
 function onFrameRequest(details) {
-  const { tabId, frameId, type, url } = details;
+  const { tabId, frameId, type, url, timeStamp } = details;
   if (tabId < 0) return;
   if (type === 'main_frame') {
-    // A real navigation starts a fresh list for this tab.
+    // A real navigation starts a fresh list for this tab (what the new page
+    // already reported stays: in Firefox that can arrive before this event).
     pageUrlByTab.set(tabId, url);
     for (const key of [...frameUrls.keys()]) if (key.startsWith(`${tabId}:`)) frameUrls.delete(key);
     frameUrls.set(frameKey(tabId, 0), url);
-    store.clear(tabId).then(() => updateBadge(tabId));
+    store.clear(tabId, timeStamp).then(() => updateBadge(tabId));
   } else if (type === 'sub_frame') {
     frameUrls.set(frameKey(tabId, frameId), url);
   }

@@ -252,6 +252,43 @@ players by length. Progress is polled (`badge:progress`), downloads can be
 cancelled (two clicks), and jobs are found again after a reload by entry id,
 key and URL path.
 
+## Firefox
+
+The Firefox version is the same source with another manifest
+(`scripts/firefox.js` → `dist/firefox/`; `npm run build:firefox`,
+`npm run package -- --firefox`): `background.scripts` (an event page, module
+type, mux.js loaded first) instead of the service worker, no `offscreen`
+permission, no `key`, no COOP/COEP, and `browser_specific_settings.gecko`
+(id `video-downloader@talhauncu.github.io`, Firefox 140+,
+`data_collection_permissions: none`). The multi-threaded ffmpeg core is left
+out.
+
+- **No offscreen document.** Firefox's background page has a DOM, so
+  `runOffscreenJob` (`src/background/offscreen.js`) imports the offscreen
+  module into it on first use and calls its jobs directly (`runLocalJob`).
+  Its reports go to the message handlers through a function (`setSink`)
+  instead of `runtime.sendMessage`, which does not reach the sender's own page.
+- **Staying awake.** Firefox suspends an idle background page after about 30 s
+  without an extension event, which would stop a download running in it.
+  While a job runs, the offscreen module writes an `awake` key to
+  `storage.session` every 10 s; the background's `storage.onChanged`
+  listeners make that an event.
+- **Referer rules** apply to `chrome.downloads` too in Firefox (not in
+  Chrome), so a Referer-protected plain file downloads directly.
+- **Navigation order.** In Firefox a new page's first reports (DOM scan, a
+  site extractor's inline data) can reach the background before its
+  `main_frame` request does; the navigation therefore drops only the entries
+  last seen before the request started (`store.clear(tab, before)`).
+- **Tests** (`test/e2e-firefox`) start Playwright's Firefox with its remote
+  debugging server, install `dist/firefox` as a temporary add-on and reach the
+  background page and the popup (opened as a tab) through the Remote
+  Debugging Protocol (`rdp.js`: `installTemporaryAddon`, the add-on's watcher,
+  `evaluateJSAsync`); Playwright cannot attach to extension pages in Firefox.
+- **Release**: the release workflow signs the Firefox build on
+  addons.mozilla.org (channel `unlisted`, `web-ext sign`, with the source
+  archive) when the API key is set as repository secrets, and attaches the
+  `.xpi`. CI runs `web-ext lint` (Mozilla's add-on linter) on every push.
+
 ## Tests
 
 - Unit tests (`npm test`): `node --test` with `test/unit/setup.js` loading the

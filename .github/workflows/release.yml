@@ -1,6 +1,9 @@
 name: release
 
-# A v* tag (pushed after a PR is merged) publishes the packaged extension.
+# A v* tag (pushed after a PR is merged) publishes the packaged extension:
+# the Chrome zip, the Firefox zip and, when the addons.mozilla.org API key is
+# set as repository secrets, the Firefox build signed by AMO (unlisted) as an
+# .xpi that installs in any Firefox.
 on:
   push:
     tags: ['v*']
@@ -11,14 +14,31 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+      AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+          cache: npm
+      - run: npm ci
       - name: Package (the tag must match manifest.json's version)
-        run: node scripts/package.js --check-tag "$GITHUB_REF_NAME"
+        run: node scripts/package.js --check-tag "$GITHUB_REF_NAME" --firefox
       - name: Create the release
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "$GITHUB_REF_NAME" dist/video-downloader-*.zip --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
+      # After the release exists: a signing problem leaves the zips published and this run red.
+      - name: Sign the Firefox build on addons.mozilla.org (unlisted) and attach the .xpi
+        if: env.AMO_JWT_ISSUER != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git archive --format=zip -o dist/source.zip HEAD
+          npx web-ext sign --source-dir dist/firefox --artifacts-dir dist/signed --channel unlisted \
+            --api-key "$AMO_JWT_ISSUER" --api-secret "$AMO_JWT_SECRET" --upload-source-code dist/source.zip
+          xpi=$(ls dist/signed/*.xpi)
+          cp "$xpi" "dist/video-downloader-${GITHUB_REF_NAME#v}.xpi"
+          gh release upload "$GITHUB_REF_NAME" "dist/video-downloader-${GITHUB_REF_NAME#v}.xpi"

@@ -1,15 +1,16 @@
-# Video Downloader (Chrome extension)
+# Video Downloader (Chrome and Firefox extension)
 
 [Türkçe](README.tr.md)
 
-A Manifest V3 Chrome extension that downloads the videos playing on a page:
+A Manifest V3 extension for Chrome and Firefox that downloads the videos playing on a page:
 progressive files (MP4/WebM), HLS and DASH streams, with their subtitles. It
 works inside third-party player iframes (embedded players), merges separate audio
 and video into one MP4 in the browser (ffmpeg.wasm), and puts a small
 download button on top of videos.
 
-It is not published in the Chrome Web Store; you load it as an unpacked
-extension. DRM-protected content (Netflix, Disney+, YouTube Premium …) cannot
+It is not published in the Chrome Web Store or listed on addons.mozilla.org: in
+Chrome you load it as an unpacked extension, in Firefox you install the signed
+`.xpi` from the releases. DRM-protected content (Netflix, Disney+, YouTube Premium …) cannot
 be downloaded and is out of scope; YouTube and live streams are not supported.
 
 <p align="center"><img src="docs/images/badge-en.gif" width="640" alt="Hovering a video shows a Download button; it offers the qualities, then shows the progress and a check mark when done"></p>
@@ -22,6 +23,8 @@ The images come from the demo fixture page (`npm run screenshots`), not from a r
 
 ## Install
 
+### Chrome
+
 1. Download the latest `video-downloader-<version>.zip` from
    [Releases](https://github.com/talhauncu/video-downloader-extension/releases) and unzip it,
    or clone this repository.
@@ -33,6 +36,25 @@ After updating the files, press **Reload** on the extension's card. The
 extension id is fixed (`dnbedddlffjlpbmgpdmnegngpkejbbjn`, from the `key` in
 `manifest.json`), so settings, history and the shortcut survive moving the
 folder.
+
+### Firefox
+
+Firefox 140 or newer.
+
+1. Download the latest `video-downloader-<version>.xpi` from
+   [Releases](https://github.com/talhauncu/video-downloader-extension/releases)
+   (signed by addons.mozilla.org, not listed there).
+2. Open it in Firefox (drag it onto a window, or **File → Open File**) and
+   confirm the installation. Firefox updates nothing by itself: install the
+   next release's `.xpi` the same way.
+
+To try a checkout without signing: `npm run build:firefox`, then
+`about:debugging` → **This Firefox** → **Load Temporary Add-on** →
+`dist/firefox/manifest.json` (gone after a restart).
+
+In Firefox the faster multi-threaded conversion to H.264 is not available
+(Firefox does not isolate extension pages); conversion uses the
+single-threaded core.
 
 ## Use
 
@@ -85,7 +107,7 @@ once · notifications · history size.
 |---|---|
 | `webRequest`, host access to all sites | See the media requests a page makes (MP4, playlists, segments, subtitles) and their sizes. |
 | `declarativeNetRequest` | Send the player's Referer/Origin with the extension's own requests; many media servers require it. Rules are temporary. |
-| `offscreen` | Run long stream downloads, decryption, remuxing and ffmpeg.wasm outside the service worker. |
+| `offscreen` | Run long stream downloads, decryption, remuxing and ffmpeg.wasm outside the service worker (Chrome only; Firefox's background page does this itself). |
 | `downloads` | Save files and show them in their folder. |
 | `notifications` | Say when a stream download is done or has failed (can be turned off in the settings). |
 | `storage` | Settings, the per-tab list, job state and history. |
@@ -112,18 +134,19 @@ Requirements: Node 22+ (CI uses 24); ffmpeg only to regenerate test media.
 
 ```bash
 npm install
-npx playwright install chromium --no-shell
+npx playwright install chromium firefox --no-shell
 ```
 
 | Command | What it does |
 |---|---|
 | `npm test` | Unit tests (`node --test`) |
-| `npm run e2e` | Playwright e2e tests: the extension in a real Chromium against a local fixture server |
+| `npm run e2e` | Playwright e2e tests: the extension in a real Chromium (`test/e2e`) and its Firefox build in Firefox (`test/e2e-firefox`) against a local fixture server |
 | `npm run lint` | ESLint and Prettier check |
 | `npm run typecheck` | `tsc --checkJs` over `src/` |
 | `npm run check:vendor` | Checks that `src/vendor/` holds the npm packages' files unchanged (SHA-256) |
 | `npm run format` | Prettier, writing |
-| `npm run package` | Builds `dist/video-downloader-<version>.zip` (what a release contains) |
+| `npm run package` | Builds `dist/video-downloader-<version>.zip` (what a release contains); with `-- --firefox` also the Firefox zip |
+| `npm run build:firefox` | Builds the Firefox version in `dist/firefox/` |
 | `npm run fixtures` | Regenerates `test/fixtures/media` with ffmpeg |
 | `npm run screenshots` | Regenerates the README images in `docs/images/` (demo fixture page, English and Turkish; needs ffmpeg for the GIFs) |
 | `npm run serve` | Fixture server at `http://127.0.0.1:8787` for manual tries |
@@ -149,7 +172,7 @@ on staged files. There is no build step: the files are loaded as they are.
 | 5c | Vimeo: on vimeo.com and in players embedded in other sites, the largest MP4 or the HLS master | ✅ |
 | 6a | Download queue (N at once), notifications, a folder inside Downloads, continuing a failed stream | ✅ |
 | 6b | Performance: multi-threaded ffmpeg for H.264 conversion; plain files converted and given embedded subtitles too | ✅ |
-| 6c | Firefox | |
+| 6c | Firefox: the same features in Firefox 140+, a signed `.xpi` in the releases | ✅ |
 
 ## License
 

@@ -1,10 +1,13 @@
 // Builds dist/video-downloader-<version>.zip: what a release contains (the
 // unpacked extension plus its licenses). `--check-tag <tag>` first verifies
 // that the tag (v1.2.3) matches manifest.json's version (release workflow).
+// `--firefox` also builds dist/firefox/ (scripts/firefox.js) and zips it as
+// dist/video-downloader-firefox-<version>.zip.
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildFirefox } from './firefox.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const { version } = JSON.parse(readFileSync(path.join(ROOT, 'manifest.json'), 'utf8'));
@@ -27,3 +30,11 @@ mkdirSync(path.dirname(out), { recursive: true });
 rmSync(out, { force: true });
 execFileSync('zip', ['-q', '-r', '-X', out, ...INCLUDE, '-x', ...EXCLUDE], { cwd: ROOT, stdio: 'inherit' });
 console.log(`${path.relative(ROOT, out)} (${(statSync(out).size / 1e6).toFixed(1)} MB)`);
+
+if (process.argv.includes('--firefox')) {
+  const dir = buildFirefox(ROOT);
+  const firefoxOut = path.join(ROOT, 'dist', `video-downloader-firefox-${version}.zip`);
+  rmSync(firefoxOut, { force: true });
+  execFileSync('zip', ['-q', '-r', '-X', firefoxOut, '.'], { cwd: dir, stdio: 'inherit' });
+  console.log(`${path.relative(ROOT, firefoxOut)} (${(statSync(firefoxOut).size / 1e6).toFixed(1)} MB)`);
+}

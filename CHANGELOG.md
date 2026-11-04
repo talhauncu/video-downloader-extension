@@ -3,6 +3,16 @@
 All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow semver.
 
+## [0.14.0] - 2026-11-04
+
+### Added
+- Firefox version (Firefox 140+): the same features as in Chrome, built from the same sources with a Firefox manifest (`npm run build:firefox`). Firefox has no offscreen documents, so its background page does the downloading, decryption, remuxing and ffmpeg work itself, and keeps itself awake while a job runs. Conversion to H.264 uses the single-threaded ffmpeg core there.
+- Releases include the Firefox build: `video-downloader-firefox-<version>.zip`, and `video-downloader-<version>.xpi` signed by addons.mozilla.org (unlisted), which installs in any Firefox.
+- CI runs Mozilla's add-on linter on the Firefox build, and the e2e tests in Firefox too.
+
+### Fixed
+- In Firefox, a page's first entries (videos found right away, a site extractor's inline data) could be cleared by the navigation that brought them: they can arrive before the page request. A navigation now drops only the entries seen before it started.
+
 ## [0.13.0] - 2026-11-03
 
 ### Added

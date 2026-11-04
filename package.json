@@ -1,6 +1,6 @@
 {
   "name": "video-downloader-extension",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "private": true,
   "description": "Chrome MV3 extension that downloads videos (MP4, HLS, DASH) and their subtitles from web pages",
   "type": "module",
@@ -16,6 +16,7 @@
     "check:vendor": "node scripts/check-vendor.js",
     "prepare": "simple-git-hooks",
     "package": "node scripts/package.js",
+    "build:firefox": "node scripts/firefox.js",
     "screenshots": "node scripts/screenshots.js"
   },
   "devDependencies": {
@@ -31,7 +32,8 @@
     "mux.js": "^7.1.1",
     "prettier": "^3.9.10",
     "simple-git-hooks": "^2.14.0",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "web-ext": "^10.8.0"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged"
